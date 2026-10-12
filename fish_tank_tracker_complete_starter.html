@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fish Tank Tracker | Guppy Breeding Record</title>
+<style>
+:root{--navy:#173b67;--blue:#2774bd;--sky:#eaf4ff;--bg:#f4f7fb;--text:#203047;--muted:#718096;--line:#e2e8f0;--white:#fff;--red:#c0392b;--green:#18835d;--shadow:0 8px 28px #173b6710}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;background:var(--blue);color:white;font-weight:650}button.secondary{background:#edf3fa;color:var(--navy);border:1px solid var(--line)}button.danger{background:#fff0ef;color:var(--red);border:1px solid #f5cfca}button.small{padding:6px 9px;font-size:13px}.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}.side{background:var(--navy);color:#fff;padding:24px 15px}.brand{display:flex;gap:12px;align-items:center;padding:0 8px 26px}.logo{width:43px;height:43px;border-radius:14px;background:#fff;color:var(--blue);display:grid;place-items:center;font-size:24px}.brand strong{display:block;font-size:16px}.brand small{color:#c8ddf4}.nav{display:grid;gap:7px}.nav button{background:transparent;color:#dceafa;text-align:left;display:flex;gap:12px;align-items:center}.nav button.active,.nav button:hover{background:#ffffff20;color:#fff}.side-note{margin:28px 7px 0;padding:13px;border:1px solid #ffffff30;border-radius:12px;font-size:12px;color:#dceafa;line-height:1.6}.main{min-width:0}.top{height:76px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:12px}.top h1{font-size:20px;margin:0}.top small{color:var(--muted)}.content{padding:28px;max-width:1500px;margin:auto}.heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}.heading h2{margin:0 0 4px;font-size:24px}.muted{color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:22px}.card,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:var(--shadow)}.stat{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.stat .label{color:var(--muted);font-size:13px}.stat .value{font-size:28px;font-weight:800;margin-top:6px}.stat .ico{width:43px;height:43px;border-radius:13px;background:var(--sky);display:grid;place-items:center;font-size:21px}.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}.panel h3{margin:0 0 15px;font-size:17px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px}.toolbar input,.toolbar select{max-width:100%;min-width:150px;flex:1}.fieldgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:13px;font-weight:700;color:#526277}.field input,.field select,.field textarea,.toolbar input,.toolbar select{width:100%;border:1px solid #d6dfeb;border-radius:10px;padding:10px 11px;background:white;color:var(--text)}.field textarea{min-height:80px;resize:vertical}.form-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:850px;background:white}th,td{padding:12px 13px;text-align:left;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}th{background:#f5f8fc;color:#5e6d80;font-weight:750}tr:last-child td{border-bottom:0}.pill{display:inline-block;border-radius:999px;background:#eaf4ff;color:#205d98;padding:4px 9px;font-size:12px}.empty{text-align:center;padding:35px;color:var(--muted)}.hidden{display:none!important}.notice{padding:12px 14px;border-radius:11px;background:#fff7e6;color:#835a11;font-size:13px;line-height:1.55;margin-bottom:17px;border:1px solid #f4dfb1}.success{background:#eaf8f1;color:#176746;border-color:#bfe8d3}.mini{font-size:12px;color:var(--muted)}.row-actions{display:flex;gap:6px}.age{font-weight:750;color:var(--navy)}.page{display:none}.page.active{display:block}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.filelabel{display:inline-flex;align-items:center;gap:7px}.mobilemenu{display:none}
+@media(max-width:1000px){.app{grid-template-columns:200px 1fr}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.two{grid-template-columns:1fr}.content{padding:20px}.top{padding:0 20px}}
+@media(max-width:700px){.app{display:block}.side{padding:12px;position:sticky;top:0;z-index:5}.brand{padding:0 5px 10px}.brand small{display:none}.nav{display:flex;overflow:auto;gap:5px}.nav button{white-space:nowrap;padding:8px 10px;font-size:12px}.side-note{display:none}.top{height:62px;padding:0 15px}.top h1{font-size:16px}.top small{display:none}.content{padding:14px}.heading{align-items:flex-start;flex-direction:column}.heading h2{font-size:21px}.cards{gap:9px}.card{padding:13px}.stat .value{font-size:23px}.stat .ico{width:34px;height:34px;font-size:17px}.fieldgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><div class="logo">🐟</div><div><strong>Fish Tank Tracker</strong><small>Guppy Breeding Record</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">▦ ภาพรวม</button>
+    <button data-page="fish">🐠 ทะเบียนปลา</button>
+    <button data-page="tanks">▤ จัดการตู้ปลา</button>
+    <button data-page="events">↻ ประวัติการเลี้ยง</button>
+    <button data-page="pedigree">🌳 แผนผังพ่อแม่พันธุ์</button>
+    <button data-page="reports">▥ รายงานและสำรองข้อมูล</button>
+    <button data-page="settings">⚙ ตั้งค่า</button>
+  </nav>
+  <div class="side-note"><b>โหมดเริ่มต้น</b><br>ข้อมูลในไฟล์นี้บันทึกไว้ในเบราว์เซอร์ของอุปกรณ์นี้เท่านั้น<br><br>ยังไม่ได้เชื่อมต่อฐานข้อมูลออนไลน์</div>
+</aside>
+<main class="main">
+<header class="top"><div><h1 id="pageTitle">ภาพรวมฟาร์ม</h1><small>จัดการทะเบียนปลาและตู้ปลาในที่เดียว</small></div><div class="inline"><span class="pill">รุ่นเริ่มต้น</span><button class="small" onclick="newFish()">＋ เพิ่มกลุ่มปลา</button></div></header>
+<div class="content">
+<div class="notice"><b>โปรดทราบ:</b> นี่คือเว็บแอปต้นแบบที่ใช้งานและบันทึกข้อมูลได้ในเบราว์เซอร์ ยังไม่มีระบบล็อกอินจริงหรือฐานข้อมูลออนไลน์ จึงยังไม่ควรใช้เป็นที่เก็บข้อมูลเพียงแห่งเดียว</div>
+<section class="page active" id="page-dashboard">
+  <div class="heading"><div><h2>ภาพรวมฟาร์ม</h2><div class="muted">สรุปข้อมูลทะเบียนปลาและการจัดการตู้</div></div><button onclick="newFish()">＋ บันทึกกลุ่มปลาใหม่</button></div>
+  <div class="cards">
+    <div class="card stat"><div><div class="label">สายพันธุ์ที่บันทึก</div><div class="value" id="statStrains">0</div></div><div class="ico">🐟</div></div>
+    <div class="card stat"><div><div class="label">ตู้ปลาทั้งหมด</div><div class="value" id="statTanks">0</div></div><div class="ico">▤</div></div>
+    <div class="card stat"><div><div class="label">กลุ่มปลาทั้งหมด</div><div class="value" id="statGroups">0</div></div><div class="ico">◉</div></div>
+    <div class="card stat"><div><div class="label">ปลาคงเหลือรวม</div><div class="value" id="statFish">0</div></div><div class="ico">♧</div></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><h3>กลุ่มปลาล่าสุด</h3><div id="recentTable"></div></div>
+    <div class="panel"><h3>ทางลัด</h3><div class="toolbar"><button onclick="newFish()">＋ เพิ่มกลุ่มปลา</button><button class="secondary" onclick="showPage('tanks')">＋ จัดการตู้ปลา</button><button class="secondary" onclick="showPage('reports')">⇩ สำรองข้อมูล</button></div><p class="mini">อายุปลาอิงจากวันเกิด ระบบคำนวณใหม่เมื่อเปิดหน้าเว็บหรือรีเฟรช</p></div>
+  </div>
+</section>
+<section class="page" id="page-fish">
+  <div class="heading"><div><h2>ทะเบียนปลา</h2><div class="muted">ข้อมูลสายพันธุ์และกลุ่มปลาทั้งหมด</div></div><button onclick="newFish()">＋ เพิ่มกลุ่มปลา</button></div>
+  <div class="panel">
+    <div class="toolbar"><input id="fishSearch" placeholder="ค้นหาสายพันธุ์ / เบอร์ตู้ / รหัสกลุ่ม..." oninput="renderFish()"><select id="tankFilter" onchange="renderFish()"><option value="">ทุกตู้</option></select><select id="sexFilter" onchange="renderFish()"><option value="">ทุกเพศ</option><option>ผู้</option><option>เมีย</option><option>รวม</option></select></div>
+    <div id="fishTable"></div>
+  </div>
+</section>
+<section class="page" id="page-tanks">
+  <div class="heading"><div><h2>จัดการตู้ปลา</h2><div class="muted">สร้างและจัดการหมายเลขตู้</div></div></div>
+  <div class="two"><div class="panel"><h3>เพิ่มตู้ปลา</h3><div class="field"><label>เบอร์ตู้</label><input id="newTankCode" placeholder="เช่น T-01"></div><div class="field" style="margin-top:12px"><label>รายละเอียด (ไม่บังคับ)</label><input id="newTankNote" placeholder="เช่น ชั้นวาง A"></div><div class="form-actions"><button onclick="addTank()">บันทึกตู้</button></div></div><div class="panel"><h3>รายการตู้ปลา</h3><div id="tankList"></div></div></div>
+</section>
+<section class="page" id="page-events">
+  <div class="heading"><div><h2>ประวัติการเลี้ยง</h2><div class="muted">บันทึกการตาย การเพิ่มปลา และการย้ายตู้</div></div></div>
+  <div class="two"><div class="panel"><h3>บันทึกเหตุการณ์</h3><div class="field"><label>กลุ่มปลา</label><select id="eventGroup"></select></div><div class="field" style="margin-top:12px"><label>ประเภทเหตุการณ์</label><select id="eventType"><option value="death">ปลาตาย</option><option value="add">เพิ่มปลา</option><option value="move">ย้ายตู้</option><option value="note">บันทึกหมายเหตุ</option></select></div><div class="field" style="margin-top:12px"><label>วันที่</label><input id="eventDate" type="date"></div><div class="field" style="margin-top:12px"><label>จำนวนปลา (ใช้กับเพิ่มปลา/ปลาตาย)</label><input id="eventCount" type="number" min="1" placeholder="จำนวน"></div><div class="field" style="margin-top:12px"><label>ตู้ปลาปลายทาง (ใช้กับย้ายตู้)</label><select id="eventTank"></select></div><div class="field" style="margin-top:12px"><label>หมายเหตุ</label><textarea id="eventNote" placeholder="รายละเอียดเพิ่มเติม"></textarea></div><div class="form-actions"><button onclick="addEvent()">บันทึกเหตุการณ์</button></div></div><div class="panel"><h3>ประวัติย้อนหลัง</h3><div id="eventList"></div></div></div>
+</section>
+<section class="page" id="page-pedigree">
+  <div class="heading"><div><h2>แผนผังพ่อแม่พันธุ์</h2><div class="muted">สร้างแผนผังอัตโนมัติจากรหัสพ่อพันธุ์และแม่พันธุ์ในทะเบียนปลา</div></div><button class="secondary" onclick="showPage('fish')">ไปทะเบียนปลา</button></div>
+  <div class="notice">ระบบเชื่อมโยงอัตโนมัติเมื่อรหัสพ่อพันธุ์หรือแม่พันธุ์ที่กรอกในกลุ่มลูก ตรงกับ “รหัสกลุ่มปลา” ของกลุ่มพ่อหรือแม่ที่บันทึกไว้ หากไม่พบรหัส จะแสดงเป็นพ่อหรือแม่ที่ยังไม่มีข้อมูลในทะเบียน</div>
+  <div class="panel">
+    <div class="toolbar"><label style="align-self:center;font-weight:700">เลือกกลุ่มปลาเพื่อดูสายเลือด</label><select id="pedigreeGroup" onchange="renderPedigree()" style="flex:1;min-width:220px"></select></div>
+    <div id="pedigreeChart"></div>
+  </div>
+  <div class="panel" style="margin-top:18px"><h3>กลุ่มลูกที่เชื่อมโยงได้</h3><div id="pedigreeChildren"></div></div>
+</section>
+<section class="page" id="page-reports">
+  <div class="heading"><div><h2>รายงานและสำรองข้อมูล</h2><div class="muted">ส่งออกข้อมูลเพื่อนำไปเก็บสำรอง</div></div></div>
+  <div class="two"><div class="panel"><h3>ส่งออกข้อมูล</h3><p class="muted">ดาวน์โหลดทะเบียนปลา ตู้ปลา และประวัติทั้งหมดเป็นไฟล์ JSON เพื่อสำรองหรือย้ายข้อมูล</p><div class="toolbar"><button onclick="exportJSON()">⇩ ส่งออก JSON</button><button class="secondary" onclick="exportCSV()">⇩ ส่งออกทะเบียน CSV</button></div></div><div class="panel"><h3>นำเข้าข้อมูลสำรอง</h3><p class="muted">เลือกไฟล์ JSON ที่เคยส่งออกจากเว็บไซต์นี้ การนำเข้าจะเขียนทับข้อมูลปัจจุบัน</p><input type="file" id="importFile" accept=".json,application/json"><div class="form-actions"><button class="secondary" onclick="importJSON()">นำเข้าข้อมูล</button></div></div></div>
+</section>
+<section class="page" id="page-settings">
+  <div class="heading"><div><h2>ตั้งค่า</h2><div class="muted">การจัดการข้อมูลในอุปกรณ์นี้</div></div></div>
+  <div class="panel"><h3>ข้อมูลเริ่มต้น</h3><p>สามารถใส่ข้อมูลตัวอย่าง Full White Platinum เพื่อทดลองระบบได้</p><div class="toolbar"><button class="secondary" onclick="seedDemo()">เพิ่มข้อมูลตัวอย่าง</button><button class="danger" onclick="clearAll()">ลบข้อมูลทั้งหมด</button></div><p class="mini">คำเตือน: การลบข้อมูลไม่สามารถย้อนกลับได้ เว้นแต่คุณจะมีไฟล์สำรอง</p></div>
+</section>
+<section class="page" id="page-form">
+  <div class="heading"><div><h2 id="formTitle">เพิ่มกลุ่มปลา</h2><div class="muted">กรอกข้อมูลประจำกลุ่มปลา</div></div><button class="secondary" onclick="showPage('fish')">← กลับทะเบียน</button></div>
+  <div class="panel"><form id="fishForm" onsubmit="saveFish(event)"><input type="hidden" id="fishId"><div class="fieldgrid">
+    <div class="field"><label>ชื่อสายพันธุ์ *</label><input id="strain" required placeholder="เช่น Full White Platinum"></div>
+    <div class="field"><label>เบอร์ตู้ *</label><select id="tankCode" required></select></div>
+    <div class="field"><label>รหัสกลุ่มปลา *</label><input id="groupCode" required placeholder="เช่น FWP-001"></div>
+    <div class="field"><label>วันเกิด</label><input id="birthDate" type="date" onchange="previewAge()"></div>
+    <div class="field"><label>อายุปลา ณ ปัจจุบัน</label><input id="agePreview" readonly placeholder="คำนวณจากวันเกิด"></div>
+    <div class="field"><label>จำนวนเริ่มต้น *</label><input id="initialCount" type="number" min="0" value="10" required></div>
+    <div class="field"><label>เพศ</label><select id="sex"><option>รวม</option><option>ผู้</option><option>เมีย</option></select></div>
+    <div class="field"><label>รหัสพ่อพันธุ์</label><input id="fatherId" placeholder="เช่น FWP-M001"></div>
+    <div class="field"><label>รหัสแม่พันธุ์</label><input id="motherId" placeholder="เช่น FWP-F001"></div>
+    <div class="field"><label>แหล่งที่มา</label><input id="source" placeholder="เช่น เพาะเอง / ซื้อจากฟาร์ม"></div>
+    <div class="field full"><label>หมายเหตุ</label><textarea id="notes" placeholder="บันทึกเพิ่มเติม"></textarea></div>
+  </div><div class="form-actions"><button type="button" class="secondary" onclick="resetForm()">ล้างแบบฟอร์ม</button><button type="submit">บันทึกข้อมูล</button></div></form></div>
+</section>
+</div>
+</main>
+</div>
+<script>
+const KEY='guppyTrackerCompleteStarter_v1';
+let db={fish:[],tanks:[],events:[]};
+const $=id=>document.getElementById(id);
+function load(){try{const x=localStorage.getItem(KEY);if(x)db=JSON.parse(x)}catch(e){alert('อ่านข้อมูลในเบราว์เซอร์ไม่ได้')} if(!db.tanks.length)db.tanks=[{code:'T-01',note:'ตู้เริ่มต้น'}];}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function uid(){return 'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function age(date){if(!date)return '-';let b=new Date(date+'T00:00:00'),n=new Date();n=new Date(n.getFullYear(),n.getMonth(),n.getDate());let d=Math.floor((n-b)/86400000);if(d<0)return 'วันเกิดในอนาคต';return `${Math.floor(d/365)} ปี ${Math.floor((d%365)/30)} เดือน ${(d%365)%30} วัน (${d} วัน)`}
+function remaining(f){return Math.max(0,Number(f.initialCount||0)+Number(f.addedCount||0)-Number(f.deadCount||0))}
+function previewAge(){$('agePreview').value=age($('birthDate').value)}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('page-'+name).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));$('pageTitle').textContent=({dashboard:'ภาพรวมฟาร์ม',fish:'ทะเบียนปลา',tanks:'จัดการตู้ปลา',events:'ประวัติการเลี้ยง',pedigree:'แผนผังพ่อแม่พันธุ์',reports:'รายงานและสำรองข้อมูล',settings:'ตั้งค่า',form:'ข้อมูลกลุ่มปลา'})[name]||name;renderAll();window.scrollTo(0,0)}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function newFish(){resetForm();$('formTitle').textContent='เพิ่มกลุ่มปลา';showPage('form')}
+function resetForm(){$('fishForm').reset();$('fishId').value='';$('initialCount').value=10;$('agePreview').value='';fillSelects()}
+function editFish(id){let f=db.fish.find(x=>x.id===id);if(!f)return;showPage('form');$('formTitle').textContent='แก้ไขข้อมูลกลุ่มปลา';for(let [k,v] of Object.entries({fishId:f.id,strain:f.strain,tankCode:f.tankCode,groupCode:f.groupCode,birthDate:f.birthDate||'',initialCount:f.initialCount,sex:f.sex||'รวม',fatherId:f.fatherId||'',motherId:f.motherId||'',source:f.source||'',notes:f.notes||''}))$(k).value=v;previewAge()}
+function saveFish(e){e.preventDefault();let id=$('fishId').value,old=db.fish.find(x=>x.id===id);let obj={id:id||uid(),strain:$('strain').value.trim(),tankCode:$('tankCode').value,groupCode:$('groupCode').value.trim(),birthDate:$('birthDate').value,initialCount:Number($('initialCount').value||0),sex:$('sex').value,fatherId:$('fatherId').value.trim(),motherId:$('motherId').value.trim(),source:$('source').value.trim(),notes:$('notes').value.trim(),addedCount:old?.addedCount||0,deadCount:old?.deadCount||0,createdAt:old?.createdAt||new Date().toISOString()};if(db.fish.some(f=>f.id!==obj.id&&f.groupCode.toLowerCase()===obj.groupCode.toLowerCase()))return alert('รหัสกลุ่มปลานี้มีแล้ว กรุณาใช้รหัสอื่น');if(old)db.fish=db.fish.map(f=>f.id===id?obj:f);else db.fish.unshift(obj);save();showPage('fish')}
+function deleteFish(id){if(!confirm('ยืนยันลบกลุ่มปลานี้? ประวัติเหตุการณ์ที่เกี่ยวข้องอาจยังคงอยู่'))return;db.fish=db.fish.filter(f=>f.id!==id);save()}
+function addTank(){let code=$('newTankCode').value.trim(),note=$('newTankNote').value.trim();if(!code)return alert('กรุณากรอกเบอร์ตู้');if(db.tanks.some(t=>t.code.toLowerCase()===code.toLowerCase()))return alert('มีเบอร์ตู้นี้แล้ว');db.tanks.push({code,note});$('newTankCode').value='';$('newTankNote').value='';save()}
+function deleteTank(code){if(db.fish.some(f=>f.tankCode===code))return alert('ยังลบไม่ได้ เพราะมีปลาอยู่ในตู้นี้ กรุณาย้ายกลุ่มปลาออกก่อน');if(confirm('ลบตู้ '+code+' ?')){db.tanks=db.tanks.filter(t=>t.code!==code);save()}}
+function fillSelects(){let opts=db.tanks.map(t=>`<option value="${esc(t.code)}">${esc(t.code)}</option>`).join('');$('tankCode').innerHTML=opts;$('eventTank').innerHTML='<option value="">เลือกตู้ปลาปลายทาง</option>'+opts;$('tankFilter').innerHTML='<option value="">ทุกตู้</option>'+opts;$('eventGroup').innerHTML=db.fish.map(f=>`<option value="${f.id}">${esc(f.groupCode)} — ${esc(f.strain)}</option>`).join('');let pg=$('pedigreeGroup');if(pg){let old=pg.value;pg.innerHTML=db.fish.map(f=>`<option value="${f.id}">${esc(f.groupCode)} — ${esc(f.strain)}</option>`).join('');if(db.fish.some(f=>f.id===old))pg.value=old}}
+function renderFish(){let q=($('fishSearch')?.value||'').toLowerCase(),tf=$('tankFilter')?.value||'',sf=$('sexFilter')?.value||'';let arr=db.fish.filter(f=>(`${f.strain} ${f.tankCode} ${f.groupCode} ${f.fatherId} ${f.motherId}`.toLowerCase().includes(q))&&(!tf||f.tankCode===tf)&&(!sf||f.sex===sf));$('fishTable').innerHTML=arr.length?`<div class="tablewrap"><table><thead><tr><th>สายพันธุ์ / กลุ่ม</th><th>เบอร์ตู้</th><th>วันเกิด</th><th>อายุปัจจุบัน</th><th>เริ่มต้น</th><th>ตาย</th><th>คงเหลือ</th><th>เพศ</th><th>จัดการ</th></tr></thead><tbody>${arr.map(f=>`<tr><td><b>${esc(f.strain)}</b><br><span class="mini">${esc(f.groupCode)}</span></td><td>${esc(f.tankCode)}</td><td>${f.birthDate||'-'}</td><td class="age">${esc(age(f.birthDate))}</td><td>${f.initialCount}</td><td>${f.deadCount||0}</td><td><b>${remaining(f)}</b></td><td>${esc(f.sex)}</td><td><div class="row-actions"><button class="small secondary" onclick="editFish('${f.id}')">แก้ไข</button><button class="small danger" onclick="deleteFish('${f.id}')">ลบ</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ยังไม่มีข้อมูลปลา กด “เพิ่มกลุ่มปลา” เพื่อเริ่มบันทึก</div>'}
+function renderTanks(){$('tankList').innerHTML=db.tanks.length?db.tanks.map(t=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)"><div><b>${esc(t.code)}</b><div class="mini">${esc(t.note||'ไม่มีรายละเอียด')} · ${db.fish.filter(f=>f.tankCode===t.code).length} กลุ่มปลา</div></div><button class="small danger" onclick="deleteTank('${esc(t.code)}')">ลบ</button></div>`).join(''):'<div class="empty">ยังไม่มีตู้ปลา</div>'}
+function addEvent(){let id=$('eventGroup').value,f=db.fish.find(x=>x.id===id),type=$('eventType').value,date=$('eventDate').value||new Date().toISOString().slice(0,10),count=Number($('eventCount').value||0),note=$('eventNote').value.trim();if(!f)return alert('กรุณาเพิ่มกลุ่มปลาก่อน');if((type==='death'||type==='add')&&count<1)return alert('กรุณาระบุจำนวนปลา');if(type==='death'&&count>remaining(f))return alert('จำนวนปลาตายมากกว่าจำนวนปลาคงเหลือ');if(type==='death')f.deadCount=(f.deadCount||0)+count;if(type==='add')f.addedCount=(f.addedCount||0)+count;if(type==='move'){let dest=$('eventTank').value;if(!dest)return alert('กรุณาเลือกตู้ปลาปลายทาง');f.tankCode=dest}db.events.unshift({id:uid(),groupId:id,groupCode:f.groupCode,strain:f.strain,type,date,count:type==='note'||type==='move'?0:count,tankCode:f.tankCode,note});$('eventCount').value='';$('eventNote').value='';save()}
+function renderEvents(){const names={death:'ปลาตาย',add:'เพิ่มปลา',move:'ย้ายตู้',note:'หมายเหตุ'};$('eventList').innerHTML=db.events.length?db.events.map(e=>`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="inline"><span class="pill">${names[e.type]||e.type}</span><b>${esc(e.groupCode)}</b><span class="mini">${esc(e.date)}</span></div><div style="margin-top:5px">${e.type==='death'?'ตาย '+e.count+' ตัว':e.type==='add'?'เพิ่ม '+e.count+' ตัว':e.type==='move'?'ย้ายไป '+esc(e.tankCode):esc(e.note||'-')}</div>${e.note&&e.type!=='note'?`<div class="mini">${esc(e.note)}</div>`:''}<div style="margin-top:6px"><button class="small danger" onclick="deleteEvent('${e.id}')">ลบรายการ</button></div></div>`).join(''):'<div class="empty">ยังไม่มีประวัติ</div>'}
+function deleteEvent(id){let e=db.events.find(x=>x.id===id);if(!e||!confirm('ลบประวัตินี้และปรับจำนวนปลาให้กลับตามเดิมหรือไม่?'))return;let f=db.fish.find(x=>x.id===e.groupId);if(f&&e.type==='death')f.deadCount=Math.max(0,(f.deadCount||0)-e.count);if(f&&e.type==='add')f.addedCount=Math.max(0,(f.addedCount||0)-e.count);db.events=db.events.filter(x=>x.id!==id);save()}
+function findByGroupCode(code){if(!code)return null;return db.fish.find(f=>(f.groupCode||'').trim().toLowerCase()===code.trim().toLowerCase())||null}
+function pedigreeNode(f,label,unknownCode,role){
+  const title=f?`${esc(f.groupCode)} · ${esc(f.strain)}`:(unknownCode?`${esc(unknownCode)} · ยังไม่มีทะเบียน`:`ยังไม่ระบุ${role?' ('+role+')':''}`);
+  const sub=f?`ตู้ ${esc(f.tankCode)} · อายุ ${esc(age(f.birthDate))} · คงเหลือ ${remaining(f)} ตัว`:'เพิ่มข้อมูลกลุ่มพ่อ/แม่ในทะเบียนเพื่อเชื่อมโยง';
+  return `<div style="border:1px solid ${f?'#bfd7f1':'#e2e8f0'};background:${f?'#f0f7ff':'#f8fafc'};border-radius:13px;padding:13px;min-width:0;text-align:center"><div style="font-size:12px;color:#718096;margin-bottom:5px">${role||'กลุ่มปลา'}</div><b style="display:block;overflow-wrap:anywhere">${title}</b><div class="mini" style="white-space:normal;margin-top:5px">${sub}</div>${f?`<button class="small secondary" style="margin-top:9px" onclick="editFish('${f.id}')">เปิดข้อมูล</button>`:''}</div>`;
+}
+function pedigreeBranch(f,depth,seen){
+ if(!f)return '';
+ if(depth<=0)return `<div class="mini">แสดงถึงรุ่นนี้แล้ว</div>`;
+ if(seen.has(f.id))return `<div class="mini" style="color:#b42318">พบการวนซ้ำในรหัสสายเลือด กรุณาตรวจสอบ</div>`;
+ let next=new Set(seen);next.add(f.id);
+ let father=findByGroupCode(f.fatherId),mother=findByGroupCode(f.motherId);
+ return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">${pedigreeNode(father,'',f.fatherId,'พ่อพันธุ์')}${pedigreeNode(mother,'',f.motherId,'แม่พันธุ์')}</div>${(father||mother)?`<div style="margin:7px 0 0 0;padding-left:10px;border-left:2px solid #d8e6f6">${[father,mother].filter(Boolean).map(parent=>`<div style="margin:10px 0 14px"><div class="mini" style="margin-bottom:5px">พ่อแม่ของ ${esc(parent.groupCode)}</div>${pedigreeBranch(parent,depth-1,next)}</div>`).join('')}</div>`:''}`;
+}
+function renderPedigree(){
+ let sel=$('pedigreeGroup'),f=db.fish.find(x=>x.id===sel?.value);
+ if(!sel)return;
+ if(!db.fish.length){$('pedigreeChart').innerHTML='<div class="empty">ยังไม่มีข้อมูลปลา กรุณาเพิ่มกลุ่มปลาและกรอกรหัสพ่อพันธุ์/แม่พันธุ์ก่อน</div>';$('pedigreeChildren').innerHTML='<div class="empty">ยังไม่มีข้อมูล</div>';return}
+ if(!f){f=db.fish[0];sel.value=f.id}
+ let father=findByGroupCode(f.fatherId),mother=findByGroupCode(f.motherId);
+ $('pedigreeChart').innerHTML=`<div style="text-align:center;max-width:800px;margin:auto"><div style="font-size:12px;color:#718096;margin-bottom:7px">รุ่นพ่อแม่</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${pedigreeNode(father,'',f.fatherId,'พ่อพันธุ์')}${pedigreeNode(mother,'',f.motherId,'แม่พันธุ์')}</div><div style="height:24px;width:2px;background:#bfd2e8;margin:auto"></div><div style="max-width:480px;margin:auto;border:2px solid #2774bd;background:#edf6ff;border-radius:15px;padding:16px"><div class="mini">กลุ่มปลาที่เลือก</div><b style="font-size:18px;display:block;margin:4px 0">${esc(f.groupCode)} · ${esc(f.strain)}</b><div class="mini">ตู้ ${esc(f.tankCode)} · อายุ ${esc(age(f.birthDate))} · คงเหลือ ${remaining(f)} ตัว</div><div style="margin-top:10px"><button class="small" onclick="editFish('${f.id}')">แก้ไขข้อมูลกลุ่มนี้</button></div></div>${(father||mother)?`<div style="margin-top:24px;text-align:left"><h4 style="margin:0 0 8px">รุ่น trước đó / ปู่ย่าตายาย</h4>${pedigreeBranch(f,2,new Set())}</div>`:''}</div>`;
+ let kids=db.fish.filter(k=>(k.fatherId&&k.fatherId.trim().toLowerCase()===f.groupCode.trim().toLowerCase())||(k.motherId&&k.motherId.trim().toLowerCase()===f.groupCode.trim().toLowerCase()));
+ $('pedigreeChildren').innerHTML=kids.length?`<div class="tablewrap"><table style="min-width:550px"><thead><tr><th>รหัสกลุ่มลูก</th><th>สายพันธุ์</th><th>ตู้</th><th>วันเกิด</th><th>อายุ</th><th>คงเหลือ</th><th></th></tr></thead><tbody>${kids.map(k=>`<tr><td>${esc(k.groupCode)}</td><td>${esc(k.strain)}</td><td>${esc(k.tankCode)}</td><td>${k.birthDate||'-'}</td><td>${esc(age(k.birthDate))}</td><td>${remaining(k)}</td><td><button class="small secondary" onclick="$('pedigreeGroup').value='${k.id}';renderPedigree()">ดูผัง</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ยังไม่พบกลุ่มลูกที่อ้างอิงรหัสกลุ่มนี้เป็นพ่อหรือแม่</div>';
+}
+function renderDashboard(){$('statStrains').textContent=new Set(db.fish.map(f=>f.strain.toLowerCase())).size;$('statTanks').textContent=db.tanks.length;$('statGroups').textContent=db.fish.length;$('statFish').textContent=db.fish.reduce((a,f)=>a+remaining(f),0);let arr=db.fish.slice(0,5);$('recentTable').innerHTML=arr.length?`<div class="tablewrap"><table style="min-width:0"><thead><tr><th>สายพันธุ์</th><th>ตู้</th><th>อายุ</th><th>คงเหลือ</th></tr></thead><tbody>${arr.map(f=>`<tr><td><b>${esc(f.strain)}</b><br><span class="mini">${esc(f.groupCode)}</span></td><td>${esc(f.tankCode)}</td><td>${esc(age(f.birthDate))}</td><td>${remaining(f)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ยังไม่มีข้อมูลปลา</div>'}
+function renderAll(){fillSelects();renderDashboard();renderFish();renderTanks();renderEvents();renderPedigree();if($('page-form').classList.contains('active'))previewAge()}
+function exportJSON(){let blob=new Blob([JSON.stringify({...db,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});download(blob,'fish-tank-tracker-backup.json')}
+function exportCSV(){let rows=[['สายพันธุ์','เบอร์ตู้','รหัสกลุ่ม','วันเกิด','อายุ ณ ปัจจุบัน','จำนวนเริ่มต้น','จำนวนเพิ่ม','จำนวนตาย','จำนวนคงเหลือ','เพศ','รหัสพ่อ','รหัสแม่','แหล่งที่มา','หมายเหตุ'],...db.fish.map(f=>[f.strain,f.tankCode,f.groupCode,f.birthDate,age(f.birthDate),f.initialCount,f.addedCount||0,f.deadCount||0,remaining(f),f.sex,f.fatherId,f.motherId,f.source,f.notes])];let csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');download(new Blob([csv],{type:'text/csv;charset=utf-8'}),'guppy-breeding-record.csv')}
+function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function importJSON(){let file=$('importFile').files[0];if(!file)return alert('กรุณาเลือกไฟล์ JSON');if(!confirm('การนำเข้าจะเขียนทับข้อมูลปัจจุบัน ดำเนินการต่อหรือไม่?'))return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.fish)||!Array.isArray(x.tanks)||!Array.isArray(x.events))throw Error();db={fish:x.fish,tanks:x.tanks,events:x.events};save();alert('นำเข้าข้อมูลสำเร็จ')}catch(e){alert('ไฟล์ไม่ถูกต้องหรือไม่ใช่ไฟล์สำรองจากระบบนี้')}};r.readAsText(file)}
+function seedDemo(){if(db.fish.length&&!confirm('มีข้อมูลอยู่แล้ว ต้องการเพิ่มตัวอย่างอีกหรือไม่?'))return;db.fish.unshift({id:uid(),strain:'Full White Platinum',tankCode:db.tanks[0]?.code||'T-01',groupCode:'FWP-001',birthDate:'',initialCount:10,sex:'รวม',fatherId:'',motherId:'',source:'',notes:'',addedCount:0,deadCount:0,createdAt:new Date().toISOString()});save();showPage('fish')}
+function clearAll(){if(!confirm('ยืนยันลบข้อมูลปลา ตู้ และประวัติทั้งหมดจากเบราว์เซอร์นี้?'))return;db={fish:[],tanks:[{code:'T-01',note:'ตู้เริ่มต้น'}],events:[]};save()}
+$('eventDate').value=new Date().toISOString().slice(0,10);load();renderAll();
+</script>
+</body>
+</html>
