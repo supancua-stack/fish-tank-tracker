@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "Guppy Farm Tracker",
+  "short_name": "Guppy Farm",
+  "description": "ระบบจัดการฟาร์มปลาหางนกยูง บันทึกชุดปลา ผังตู้ปลา ป้ายหน้าตู้ และรายรับรายจ่าย",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f1f5f9",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./fish-tank-tracker-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
