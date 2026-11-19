@@ -1,0 +1,3256 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Guppy Farm Tracker — ระบบจัดการฟาร์มปลาหางนกยูง</title>
+
+  <!-- PWA Meta Tags for iOS Safari & Android Chrome -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Guppy Farm" />
+  <meta name="application-name" content="Guppy Farm" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="description" content="ระบบจัดการฟาร์มปลาหางนกยูง บันทึกชุดปลา ผังตู้ปลา ป้ายหน้าตู้ และรายรับรายจ่าย" />
+  <link rel="manifest" href="./manifest.json" />
+
+  <!-- Inline SVG App Icon (Apple Touch Icon & Favicon — No External Image Needed) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%230f766e'/%3E%3Cstop offset='100%25' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3ClinearGradient id='tail' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23fb7185'/%3E%3Cstop offset='50%25' stop-color='%23f59e0b'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='112' fill='url(%23bg)'/%3E%3Cpath d='M188 256C136 184 74 164 58 206c-12 32 10 50 10 50s-22 18-10 50c16 42 78 22 130-50z' fill='url(%23tail)'/%3E%3Cpath d='M250 184c-26-44-68-54-92-36 16 20 26 42 32 62z' fill='%23fde047' opacity='.9'/%3E%3Cpath d='M260 326c-16 34-46 48-68 38 14-18 22-32 26-46z' fill='%2338bdf8' opacity='.9'/%3E%3Cpath d='M178 256c24-66 104-106 184-96 46 6 82 42 96 96-14 54-50 90-96 96-80 10-160-30-184-96z' fill='%23ffffff'/%3E%3Cpath d='M238 176c44-10 92-4 128 18 28 17 50 40 64 62-14 22-36 45-64 62-36 22-84 28-128 18 24-24 38-52 38-80s-14-56-38-80z' fill='%23ccfbf1'/%3E%3Ccircle cx='392' cy='236' r='16' fill='%230f172a'/%3E%3Ccircle cx='397' cy='231' r='5' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="./fish-tank-tracker-icon.png" />
+
+  <!-- Google Fonts: Prompt & Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Prompt', 'Sarabun', 'Tahoma', 'sans-serif'],
+            sans: ['Sarabun', 'Prompt', 'Tahoma', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ================= BASE & MOBILE PWA / INPUT SAFETY ================= */
+    html, body {
+      font-family: 'Sarabun', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Prompt', 'Sarabun', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+    }
+
+    /* Safe area top padding for iOS standalone PWA status bar */
+    .pwa-header-safe {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* CRITICAL: Prevent iOS Safari auto-zoom & ensure smooth Thai IME typing */
+    input, select, textarea {
+      font-size: 16px !important;
+      line-height: 1.45;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      pointer-events: auto !important;
+      touch-action: manipulation;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"],
+    button {
+      touch-action: manipulation;
+    }
+
+    /* Scrollable modal backdrop so inputs never hide behind mobile keyboards */
+    .modal-backdrop {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      align-items: flex-start;
+      padding-top: max(24px, env(safe-area-inset-top, 24px));
+      padding-bottom: 120px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0f766e; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translate(-50%, 16px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .toast-enter {
+      animation: slideUpFade 0.22s ease-out forwards;
+    }
+
+    /* ================= CLEAN A4 PRINT STYLES ================= */
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      html, body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+        width: 100% !important;
+      }
+      main {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+      }
+      .no-print { display: none !important; }
+      #panel-labels { display: block !important; }
+      #print-area { display: block !important; overflow: visible !important; height: auto !important; }
+      .print-label-card {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        box-shadow: none !important;
+        border: 1.5px dashed #1e293b !important;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-badge {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-summary-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 11px !important;
+      }
+      .print-summary-table th, .print-summary-table td {
+        border: 1px solid #334155 !important;
+        padding: 5px 6px !important;
+        color: #000000 !important;
+      }
+      .print-summary-table thead { display: table-header-group !important; }
+      .print-summary-table tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+
+  <!-- ================= HEADER ================= -->
+  <header class="no-print pwa-header-safe bg-gradient-to-r from-[#0f5c5c] via-[#0f766e] to-[#0d9488] text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <!-- Brand & Live Date -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-teal-300 to-emerald-400 flex items-center justify-center shadow-md shadow-teal-950/30 shrink-0">
+              <svg class="w-6 h-6 text-[#08363c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/>
+                <path d="M18 12v.5"/>
+                <path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/>
+                <path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/>
+                <path d="M10.46 7.26C10.2 5.88 9.17 4.24 8 3h5.8a2 2 0 0 1 1.98 1.67l.23 1.4"/>
+                <path d="m16.01 17.93-.23 1.4A2 2 0 0 1 13.8 21H9.5a5.96 5.96 0 0 0 1.49-3.98"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h1 class="text-base sm:text-xl font-bold tracking-tight leading-tight flex items-center gap-2 truncate">
+                <span>Guppy Farm Tracker</span>
+                <span class="hidden sm:inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-teal-300/20 text-teal-100 border border-teal-200/30">PWA</span>
+              </h1>
+              <p class="text-xs sm:text-sm text-teal-100/90 truncate">
+                ระบบจัดการฟาร์มปลาหางนกยูง • <span id="live-today-label" class="text-teal-200 font-medium"></span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Add Button on Mobile -->
+          <button type="button" onclick="openFishModal()" class="lg:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-300 hover:bg-teal-200 text-[#08363c] font-heading font-semibold text-xs shadow-sm transition active:scale-95 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            เพิ่มปลา
+          </button>
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openFishModal()" class="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-300 hover:bg-teal-200 text-[#08363c] font-heading font-semibold text-sm shadow-sm transition active:scale-95">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            เพิ่มชุดปลา
+          </button>
+
+          <button type="button" onclick="openStrainManager()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs sm:text-sm font-medium transition active:scale-95">
+            <svg class="w-4 h-4 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg>
+            จัดการสายพันธุ์
+          </button>
+
+          <input type="file" id="import-json-input" accept=".json,application/json" class="hidden" onchange="handleImportJSON(event)" />
+          <button type="button" onclick="document.getElementById('import-json-input').click()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs sm:text-sm font-medium transition active:scale-95">
+            <svg class="w-4 h-4 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            นำเข้า JSON
+          </button>
+
+          <button type="button" onclick="exportJSON()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs sm:text-sm font-medium transition active:scale-95">
+            <svg class="w-4 h-4 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            ส่งออก JSON
+          </button>
+
+          <button type="button" onclick="requestResetData()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-100 border border-rose-300/30 text-xs sm:text-sm font-medium transition active:scale-95" title="รีเซ็ตข้อมูลกลับเป็นค่าเริ่มต้น">
+            <svg class="w-4 h-4 text-rose-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span class="hidden sm:inline">รีเซ็ตข้อมูล</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Reference Date Selector -->
+      <div class="mt-3 pt-2.5 border-t border-white/15 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+        <nav class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <button type="button" id="tab-btn-fish" onclick="switchTab('fish')" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            รายการปลาทั้งหมด
+          </button>
+          <button type="button" id="tab-btn-tanks" onclick="switchTab('tanks')" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            ผังตู้ปลา (74 ตู้)
+          </button>
+          <button type="button" id="tab-btn-labels" onclick="switchTab('labels')" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            ป้ายหน้าตู้ / พิมพ์ A4
+          </button>
+          <button type="button" id="tab-btn-finance" onclick="switchTab('finance')" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            รายรับ-รายจ่าย
+          </button>
+        </nav>
+
+        <!-- Selectable Reference Date for Age Calculation -->
+        <div class="flex items-center gap-2 bg-white/10 border border-white/15 rounded-xl px-2.5 py-1.5 self-start md:self-auto">
+          <label for="ref-date-input" class="text-[11px] sm:text-xs text-teal-100 whitespace-nowrap font-medium">คำนวณอายุ ณ วันที่:</label>
+          <input id="ref-date-input" type="date" onchange="onReferenceDateChange()" class="bg-white text-slate-900 rounded-lg px-2 py-0.5 text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-teal-300" />
+          <button type="button" onclick="resetReferenceDateToToday()" class="px-2 py-1 rounded-lg bg-teal-300/25 hover:bg-teal-300/40 text-teal-50 text-[11px] font-heading font-medium whitespace-nowrap transition">วันนี้</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
+
+    <!-- Smart Alert Banners Container -->
+    <div class="no-print space-y-2.5">
+      <!-- 1. Duplicate Tank Alert Banner -->
+      <div id="duplicate-banner" class="hidden rounded-2xl bg-amber-50 border border-amber-300 p-3.5 sm:p-4 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+              <h3 class="font-heading font-semibold text-amber-950 text-sm">แจ้งเตือน: พบรหัสตู้ปลาที่มีชุดปลาซ้ำซ้อนกันในระบบ</h3>
+              <p id="duplicate-banner-detail" class="text-xs sm:text-sm text-amber-800 mt-0.5"></p>
+            </div>
+          </div>
+          <div id="duplicate-tank-buttons" class="flex flex-wrap items-center gap-2 pl-11 md:pl-0"></div>
+        </div>
+      </div>
+
+      <!-- 2. Sex Separation Alert Banner (30-45 Days & Sex === "รวม") -->
+      <div id="sex-sep-banner" class="hidden rounded-2xl bg-sky-50 border border-sky-300 p-3.5 sm:p-4 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <h3 class="font-heading font-semibold text-sky-950 text-sm">ถึงเวลาแยกเพศ (อายุ 30–45 วัน และยังเลี้ยงรวมเพศ)</h3>
+              <p id="sex-sep-banner-detail" class="text-xs sm:text-sm text-sky-800 mt-0.5"></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 pl-11 md:pl-0 shrink-0">
+            <button type="button" id="btn-filter-sex-sep" onclick="toggleSexSepFilter()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-heading font-semibold shadow-xs transition active:scale-95">
+              กรองดูชุดที่ต้องแยกเพศ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= DASHBOARD KPI & LIFE-STAGE SUMMARY ================= -->
+    <section id="dashboard-summary" class="no-print space-y-3">
+      <!-- 5 KPI Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#0f766e] flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 truncate">ชุดปลาทั้งหมด</p>
+            <p class="font-heading text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+              <span id="kpi-batches">0</span> <span class="text-xs font-normal text-slate-500">ชุด</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 truncate">จำนวนปลาคงเหลือ</p>
+            <p class="font-heading text-xl sm:text-2xl font-bold text-teal-700 leading-tight">
+              <span id="kpi-total-fish">0</span> <span class="text-xs font-normal text-slate-500">ตัว</span>
+            </p>
+          </div>
+        </div>
+
+        <button type="button" onclick="switchTab('tanks')" class="text-left bg-white hover:border-indigo-300 rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex items-center gap-3 transition">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 truncate">ตู้ที่ใช้งาน / ทั้งหมด</p>
+            <p class="font-heading text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+              <span id="kpi-occupied-tanks" class="text-indigo-700">0</span><span class="text-slate-400 font-normal">/</span><span id="kpi-total-tanks">74</span>
+              <span class="text-[11px] font-normal text-emerald-600 ml-0.5">(<span id="kpi-empty-tanks">0</span> ว่าง)</span>
+            </p>
+          </div>
+        </button>
+
+        <button type="button" onclick="openStrainManager()" class="text-left bg-white hover:border-purple-300 rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex items-center gap-3 transition group">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 group-hover:bg-purple-100 flex items-center justify-center shrink-0 transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 truncate">สายพันธุ์ <span class="text-[10px] text-purple-600 underline font-medium">จัดการ</span></p>
+            <p class="font-heading text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+              <span id="kpi-strains">0</span> <span class="text-xs font-normal text-slate-500">สายพันธุ์</span>
+            </p>
+          </div>
+        </button>
+
+        <button type="button" onclick="switchTab('finance')" class="col-span-2 sm:col-span-1 text-left bg-white hover:border-teal-300 rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex items-center gap-3 transition">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 truncate">รายรับ-รายจ่ายสุทธิ</p>
+            <p id="kpi-net-balance" class="font-heading text-xl sm:text-2xl font-bold text-slate-900 leading-tight">฿0</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- 4 Life-Stage Quick Filter Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <button type="button" id="stage-card-fry" onclick="toggleStageFilter('fry')" class="text-left bg-white hover:bg-sky-50/70 rounded-2xl px-3.5 py-2.5 border border-slate-200 shadow-xs transition flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-sky-800">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500 shrink-0"></span>ลูกปลาอนุบาล
+            </span>
+            <p class="text-[11px] text-slate-500 mt-0.5">อายุน้อยกว่า 30 วัน</p>
+          </div>
+          <span id="stage-count-fry" class="font-heading font-bold text-lg text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-xl border border-sky-200">0</span>
+        </button>
+
+        <button type="button" id="stage-card-coloring" onclick="toggleStageFilter('coloring')" class="text-left bg-white hover:bg-amber-50/70 rounded-2xl px-3.5 py-2.5 border border-slate-200 shadow-xs transition flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-amber-800">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>กำลังขึ้นสี / แยกเพศ
+            </span>
+            <p class="text-[11px] text-slate-500 mt-0.5">อายุ 30–59 วัน</p>
+          </div>
+          <span id="stage-count-coloring" class="font-heading font-bold text-lg text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-xl border border-amber-200">0</span>
+        </button>
+
+        <button type="button" id="stage-card-juvenile" onclick="toggleStageFilter('juvenile')" class="text-left bg-white hover:bg-emerald-50/70 rounded-2xl px-3.5 py-2.5 border border-slate-200 shadow-xs transition flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-emerald-800">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>วัยรุ่น / ฟอร์มสวย
+            </span>
+            <p class="text-[11px] text-slate-500 mt-0.5">อายุ 60–89 วัน</p>
+          </div>
+          <span id="stage-count-juvenile" class="font-heading font-bold text-lg text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-xl border border-emerald-200">0</span>
+        </button>
+
+        <button type="button" id="stage-card-breeder" onclick="toggleStageFilter('breeder')" class="text-left bg-white hover:bg-purple-50/70 rounded-2xl px-3.5 py-2.5 border border-slate-200 shadow-xs transition flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-purple-800">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>พ่อแม่พันธุ์
+            </span>
+            <p class="text-[11px] text-slate-500 mt-0.5">อายุ 90 วันขึ้นไป</p>
+          </div>
+          <span id="stage-count-breeder" class="font-heading font-bold text-lg text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-xl border border-purple-200">0</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= TAB 1: FISH LIST & AGE TRACKER ================= -->
+    <section id="panel-fish" class="no-print space-y-4">
+      <!-- STATIC Filter & Search Controls (Never re-rendered during typing) -->
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
+          <div class="lg:col-span-4 relative">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              id="filter-search"
+              type="text"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="ค้นหาตู้, สายพันธุ์, รุ่น, หมายเหตุ..."
+              class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]"
+            />
+          </div>
+
+          <div class="lg:col-span-2">
+            <select id="filter-zone" onchange="renderFishListOnly()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]">
+              <option value="all">ทุกโซน (A, B, C)</option>
+              <option value="A">โซน A</option>
+              <option value="B">โซน B</option>
+              <option value="C">โซน C</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-2">
+            <select id="filter-strain" onchange="renderFishListOnly()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]">
+              <option value="all">ทุกสายพันธุ์</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-2">
+            <select id="filter-stage" onchange="onStageDropdownChange()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]">
+              <option value="all">ทุกช่วงวัย</option>
+              <option value="fry">ลูกปลาอนุบาล (&lt; 30 วัน)</option>
+              <option value="coloring">กำลังขึ้นสี / แยกเพศ (30–59 วัน)</option>
+              <option value="juvenile">วัยรุ่น / ฟอร์มสวย (60–89 วัน)</option>
+              <option value="breeder">พ่อแม่พันธุ์ (90+ วัน)</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-2">
+            <select id="filter-sort" onchange="renderFishListOnly()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]">
+              <option value="age_desc">เรียง: อายุมาก → น้อย</option>
+              <option value="age_asc">เรียง: อายุน้อย → มาก</option>
+              <option value="tank_asc">เรียง: รหัสตู้ (A–C)</option>
+              <option value="strain_asc">เรียง: ชื่อสายพันธุ์</option>
+              <option value="birth_desc">เรียง: วันเกิดล่าสุด</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-500">
+          <div id="fish-list-count">กำลังแสดง 0 ชุด</div>
+          <button type="button" id="btn-clear-filters" onclick="clearFishFilters()" class="hidden inline-flex items-center gap-1 text-[#0f766e] hover:text-[#08363c] font-medium bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 transition">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ล้างตัวกรองทั้งหมด
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-heading font-semibold text-slate-600 uppercase tracking-wide">
+                <th class="py-3 px-4 w-24">ตู้</th>
+                <th class="py-3 px-4">สายพันธุ์ / รหัสชุด</th>
+                <th class="py-3 px-4 w-36">วันเกิด</th>
+                <th class="py-3 px-4 w-44">อายุปลา</th>
+                <th class="py-3 px-4 w-44">ช่วงวัย</th>
+                <th class="py-3 px-4 w-40 text-center">คงเหลือ (ตัว)</th>
+                <th class="py-3 px-4 w-40">เพศ / ที่มา</th>
+                <th class="py-3 px-4 w-28 text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="fishListBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div id="fishMobileCards" class="md:hidden space-y-3"></div>
+
+      <!-- Empty State -->
+      <div id="fish-empty-state" class="hidden bg-white rounded-2xl border border-slate-200 p-10 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <h3 class="font-heading font-semibold text-slate-700">ไม่พบข้อมูลปลาที่ตรงกับเงื่อนไข</h3>
+        <p class="text-sm text-slate-500 mt-1">ลองปรับคำค้นหาหรือกดล้างตัวกรองเพื่อดูรายการทั้งหมด</p>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: INTERACTIVE TANK MAP ================= -->
+    <section id="panel-tanks" class="no-print hidden space-y-4">
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" onclick="setTankMapFilter('all')" id="tm-filter-all" class="px-3 py-1.5 rounded-xl text-xs font-heading font-medium transition">ทั้งหมด (74)</button>
+            <button type="button" onclick="setTankMapFilter('occupied')" id="tm-filter-occupied" class="px-3 py-1.5 rounded-xl text-xs font-heading font-medium transition">มีปลา</button>
+            <button type="button" onclick="setTankMapFilter('empty')" id="tm-filter-empty" class="px-3 py-1.5 rounded-xl text-xs font-heading font-medium transition">ตู้ว่าง</button>
+            <button type="button" onclick="setTankMapFilter('duplicate')" id="tm-filter-duplicate" class="px-3 py-1.5 rounded-xl text-xs font-heading font-medium transition">ตู้ซ้ำซ้อน</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-600">
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>อนุบาล</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>ขึ้นสี/แยกเพศ</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>วัยรุ่น</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>พ่อแม่พันธุ์</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>ซ้ำซ้อน</span>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">แตะที่ <strong>ตู้ที่มีปลา</strong> เพื่อดูรายละเอียดหรือแก้ไข/ย้ายตู้ • แตะที่ <strong>ตู้ว่าง</strong> เพื่อเพิ่มชุดปลาลงตู้นั้นได้ทันที</p>
+      </div>
+
+      <div id="tankGrid" class="space-y-5"></div>
+    </section>
+
+    <!-- ================= TAB 3: PRINTABLE LABELS & A4 SUMMARY ================= -->
+    <section id="panel-labels" class="hidden space-y-4">
+      <div class="no-print bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <h2 class="font-heading font-bold text-slate-900 text-base sm:text-lg">ป้ายติดหน้าตู้ & ตารางสรุปสำหรับพิมพ์ A4</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">รองรับการพิมพ์ทั้งบนคอมพิวเตอร์และมือถือ พร้อมโหมดเปิดหน้าพิมพ์แยกและดาวน์โหลดไฟล์ .html</p>
+          </div>
+
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 self-start">
+            <button type="button" id="print-mode-labels" onclick="setPrintMode('labels')" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-heading font-semibold transition">
+              ป้ายติดหน้าตู้
+            </button>
+            <button type="button" id="print-mode-summary" onclick="setPrintMode('summary')" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-heading font-semibold transition">
+              ตารางสรุปข้อมูลปลา (A4)
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1 border-t border-slate-100">
+          <div>
+            <label for="label-zone-filter" class="block text-xs font-heading font-medium text-slate-600 mb-1">เลือกโซนตู้ปลา</label>
+            <select id="label-zone-filter" onchange="renderPrintTab()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white">
+              <option value="all">ทุกโซน (A, B, C)</option>
+              <option value="A">เฉพาะโซน A</option>
+              <option value="B">เฉพาะโซน B</option>
+              <option value="C">เฉพาะโซน C</option>
+            </select>
+          </div>
+
+          <div id="label-cols-wrap">
+            <label for="label-cols-select" class="block text-xs font-heading font-medium text-slate-600 mb-1">รูปแบบตารางป้ายต่อหน้า A4</label>
+            <select id="label-cols-select" onchange="renderPrintTab()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white">
+              <option value="2">ขนาดมาตรฐาน (2×4 = 8 ป้าย/หน้า)</option>
+              <option value="3">ขนาดกะทัดรัด (3×4 = 12 ป้าย/หน้า)</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2 flex flex-wrap items-end gap-2">
+            <button type="button" onclick="toggleSelectAllLabels(true)" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs sm:text-sm font-heading font-medium text-slate-700 transition">เลือกทั้งหมด</button>
+            <button type="button" onclick="toggleSelectAllLabels(false)" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs sm:text-sm font-heading font-medium text-slate-700 transition">ยกเลิกเลือกทั้งหมด</button>
+            <span class="text-xs sm:text-sm text-slate-600 py-2.5 px-1">
+              เลือกอยู่ <strong id="label-selected-count" class="text-[#0f766e] font-heading">0</strong> ชุด
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2.5">
+          <button type="button" onclick="printDirectNow()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white font-heading font-semibold text-sm shadow-sm transition active:scale-95">
+            <span>🖨️ สั่งพิมพ์ทันที (Print)</span>
+          </button>
+
+          <button type="button" onclick="openStandalonePrintPage()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-heading font-semibold text-sm shadow-sm transition active:scale-95">
+            <span>📄 เปิดหน้าพิมพ์แยก</span>
+          </button>
+
+          <button type="button" onclick="downloadPrintableHtml()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-300 font-heading font-semibold text-sm transition active:scale-95">
+            <span>💾 ดาวน์โหลดหน้าพิมพ์ (.html)</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="print-area">
+        <div id="print-preview-container"></div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: FINANCE ================= -->
+    <section id="panel-finance" class="no-print hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-emerald-200 shadow-sm">
+          <p class="text-xs font-medium text-emerald-700">รายรับรวม (ขายปลา / อื่นๆ)</p>
+          <p id="fin-total-income" class="font-heading text-2xl font-bold text-emerald-600 mt-1">฿0</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-rose-200 shadow-sm">
+          <p class="text-xs font-medium text-rose-700">รายจ่ายรวม (ซื้อปลา / อุปกรณ์)</p>
+          <p id="fin-total-expense" class="font-heading text-2xl font-bold text-rose-600 mt-1">฿0</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-teal-200 shadow-sm">
+          <p class="text-xs font-medium text-[#0f766e]">ยอดคงเหลือสุทธิ</p>
+          <p id="fin-net-balance" class="font-heading text-2xl font-bold text-slate-900 mt-1">฿0</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="setFinanceFilter('all')" id="fin-filter-all" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">ทั้งหมด</button>
+          <button type="button" onclick="setFinanceFilter('income')" id="fin-filter-income" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">รายรับ</button>
+          <button type="button" onclick="setFinanceFilter('expense')" id="fin-filter-expense" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-heading font-medium transition">รายจ่าย</button>
+        </div>
+        <button type="button" onclick="openTransactionModal()" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white font-heading font-semibold text-sm shadow-sm transition active:scale-95">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          บันทึกรายรับ-รายจ่าย
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-heading font-semibold text-slate-600">
+                <th class="py-3 px-4">วันที่</th>
+                <th class="py-3 px-4">ประเภท / หมวดหมู่</th>
+                <th class="py-3 px-4">รายละเอียด / คู่ค้า</th>
+                <th class="py-3 px-4 text-right">จำนวน × ราคา</th>
+                <th class="py-3 px-4 text-right">ยอดเงิน (บาท)</th>
+                <th class="py-3 px-4 text-right w-24">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="financeList" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+        <div id="finance-empty-state" class="hidden p-8 text-center text-slate-500 text-sm">ยังไม่มีรายการรายรับ-รายจ่ายในหมวดที่เลือก</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODAL 1: ADD / EDIT FISH ================= -->
+  <div id="fish-modal" class="no-print modal-backdrop fixed inset-0 z-50 hidden justify-center bg-slate-950/60 px-3 sm:px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
+      <div class="bg-gradient-to-r from-[#0f766e] to-[#0d9488] px-5 py-4 text-white flex items-center justify-between">
+        <h2 id="fish-modal-title" class="font-heading font-semibold text-base sm:text-lg">เพิ่มชุดปลาใหม่</h2>
+        <button type="button" onclick="closeFishModal()" class="p-1.5 rounded-xl hover:bg-white/15 transition" aria-label="ปิดหน้าต่าง">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="fish-form" onsubmit="saveFishForm(event)" class="p-4 sm:p-5 space-y-4">
+        <input type="hidden" id="fish-id" value="" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="fish-tankCode" class="block text-xs font-heading font-semibold text-slate-700 mb-1">รหัสตู้ปลา *</label>
+            <select id="fish-tankCode" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]"></select>
+          </div>
+          <div>
+            <label for="fish-groupCode" class="block text-xs font-heading font-semibold text-slate-700 mb-1">รหัสชุด / รุ่น (Group Code)</label>
+            <input id="fish-groupCode" type="text" autocomplete="off" placeholder="เช่น Dumbo 1.3, โค่ 2.2, Topaz F1.2" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]" />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
+            <label for="fish-strain" class="text-xs font-heading font-semibold text-slate-700">สายพันธุ์ *</label>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="toggleQuickStrainPanel('add')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-[#0f766e] border border-teal-200 text-xs font-heading font-medium transition">+ เพิ่ม</button>
+              <button type="button" onclick="toggleQuickStrainPanel('edit')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-heading font-medium transition">แก้ไข</button>
+              <button type="button" onclick="deleteSelectedStrainFromModal()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-heading font-medium transition">ลบ</button>
+              <button type="button" onclick="openStrainManager()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-heading font-medium transition">จัดการทั้งหมด</button>
+            </div>
+          </div>
+
+          <select id="fish-strain" required onchange="onFishStrainDropdownChange()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]"></select>
+
+          <div id="custom-strain-wrap" class="hidden mt-2 p-3 rounded-xl border border-teal-200 bg-teal-50/60 space-y-2">
+            <p class="text-xs font-heading font-semibold text-[#0f766e]">เพิ่มชื่อสายพันธุ์ใหม่</p>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input id="fish-custom-strain" type="text" autocomplete="off" placeholder="พิมพ์ชื่อสายพันธุ์ใหม่..." class="flex-1 px-3 py-2 rounded-xl border border-teal-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40" />
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="addCustomStrain()" class="px-3.5 py-2 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white text-xs font-heading font-semibold">บันทึกชื่อ</button>
+                <button type="button" onclick="closeQuickStrainPanels()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs font-heading">ยกเลิก</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="edit-strain-wrap" class="hidden mt-2 p-3 rounded-xl border border-amber-200 bg-amber-50/70 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-xs font-heading font-semibold text-amber-900">แก้ไขชื่อสายพันธุ์ที่เลือก</p>
+              <span id="edit-strain-usage-hint" class="text-xs text-amber-800"></span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input id="fish-edit-strain-input" type="text" autocomplete="off" placeholder="พิมพ์ชื่อสายพันธุ์ที่ต้องการแก้ไข..." class="flex-1 px-3 py-2 rounded-xl border border-amber-300 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/40" />
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="saveQuickEditStrain()" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-heading font-semibold">อัปเดต</button>
+                <button type="button" onclick="closeQuickStrainPanels()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs font-heading">ยกเลิก</button>
+              </div>
+            </div>
+            <p class="text-[11px] text-amber-800">* ระบบจะอัปเดตชื่อสายพันธุ์ในชุดปลาเดิมทุกชุดที่ใช้ชื่อนี้ให้ตรงกันโดยอัตโนมัติ</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="fish-birthDate" class="block text-xs font-heading font-semibold text-slate-700 mb-1">วันเกิดปลา *</label>
+            <input id="fish-birthDate" type="date" required oninput="updateModalAgePreview()" onchange="updateModalAgePreview()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]" />
+            <p id="modal-age-preview" class="text-xs text-[#0f766e] font-medium mt-1"></p>
+          </div>
+
+          <div>
+            <label for="fish-sex" class="block text-xs font-heading font-semibold text-slate-700 mb-1">เพศ</label>
+            <select id="fish-sex" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]">
+              <option value="รวม">รวม (ยังไม่แยกเพศ)</option>
+              <option value="ผู้">ผู้ (ตัวผู้)</option>
+              <option value="เมีย">เมีย (ตัวเมีย)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-heading font-semibold text-slate-700">จำนวนปลาในตู้</span>
+            <span class="text-xs font-heading font-bold text-[#0f766e]">คงเหลือ: <span id="modal-live-count">10</span> ตัว</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2.5">
+            <div>
+              <label for="fish-initialCount" class="block text-xs text-slate-600 mb-1">ตั้งต้น</label>
+              <input id="fish-initialCount" type="number" inputmode="numeric" min="0" value="10" oninput="updateModalLiveCount()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+            </div>
+            <div>
+              <label for="fish-addedCount" class="block text-xs text-emerald-700 mb-1">เพิ่ม (+)</label>
+              <input id="fish-addedCount" type="number" inputmode="numeric" min="0" value="0" oninput="updateModalLiveCount()" class="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-white" />
+            </div>
+            <div>
+              <label for="fish-deadCount" class="block text-xs text-rose-700 mb-1">ตาย/ออก (-)</label>
+              <input id="fish-deadCount" type="number" inputmode="numeric" min="0" value="0" oninput="updateModalLiveCount()" class="w-full px-3 py-2 rounded-xl border border-rose-300 bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="fish-fatherId" class="block text-xs font-heading font-semibold text-slate-700 mb-1">รหัสพ่อพันธุ์ (Father ID)</label>
+            <input id="fish-fatherId" type="text" autocomplete="off" placeholder="เช่น HB F0 หรือ -" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+          </div>
+          <div>
+            <label for="fish-motherId" class="block text-xs font-heading font-semibold text-slate-700 mb-1">รหัสแม่พันธุ์ (Mother ID)</label>
+            <input id="fish-motherId" type="text" autocomplete="off" placeholder="เช่น HB F0 หรือ -" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="fish-sourceType" class="block text-xs font-heading font-semibold text-slate-700 mb-1">แหล่งที่มา</label>
+            <select id="fish-sourceType" onchange="toggleFarmNameField()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white">
+              <option value="own">เพาะเอง</option>
+              <option value="farm">นำเข้าจากฟาร์ม</option>
+            </select>
+          </div>
+          <div id="farm-name-wrap" class="hidden">
+            <label for="fish-farmName" class="block text-xs font-heading font-semibold text-slate-700 mb-1">ชื่อฟาร์มต้นทาง</label>
+            <input id="fish-farmName" type="text" autocomplete="off" placeholder="ระบุชื่อฟาร์ม..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+          </div>
+        </div>
+
+        <div>
+          <label for="fish-notes" class="block text-xs font-heading font-semibold text-slate-700 mb-1">หมายเหตุ</label>
+          <textarea id="fish-notes" rows="2" placeholder="บันทึกเพิ่มเติม เช่น สีสวย ฟอร์มเด่น กำหนดคัดแยกเพศ..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100 gap-2">
+          <button type="button" id="btn-delete-fish-modal" onclick="requestDeleteFishFromModal()" class="hidden px-3.5 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 text-sm font-heading font-medium transition">ลบชุดปลานี้</button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeFishModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-heading font-medium">ยกเลิก</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white text-sm font-heading font-semibold shadow-sm transition">บันทึกข้อมูล</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: TANK DETAIL ================= -->
+  <div id="tank-detail-modal" class="no-print modal-backdrop fixed inset-0 z-50 hidden justify-center bg-slate-950/60 px-3 sm:px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+      <div class="bg-gradient-to-r from-[#0f5c5c] to-[#0d9488] px-5 py-4 text-white flex items-center justify-between">
+        <div>
+          <h2 id="tank-detail-title" class="font-heading font-bold text-lg">ตู้ A-01</h2>
+          <p id="tank-detail-subtitle" class="text-xs text-teal-100"></p>
+        </div>
+        <button type="button" onclick="closeTankDetailModal()" class="p-1.5 rounded-xl hover:bg-white/15 transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="tank-detail-body" class="p-4 sm:p-5 space-y-3"></div>
+      <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <button type="button" id="tank-detail-add-btn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white text-xs sm:text-sm font-heading font-semibold transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          เพิ่มปลาลงตู้นี้
+        </button>
+        <button type="button" onclick="closeTankDetailModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-heading font-medium">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: ADD / EDIT TRANSACTION ================= -->
+  <div id="tx-modal" class="no-print modal-backdrop fixed inset-0 z-50 hidden justify-center bg-slate-950/60 px-3 sm:px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+      <div class="bg-gradient-to-r from-[#0f766e] to-[#0d9488] px-5 py-4 text-white flex items-center justify-between">
+        <h2 id="tx-modal-title" class="font-heading font-semibold text-base sm:text-lg">บันทึกรายรับ-รายจ่าย</h2>
+        <button type="button" onclick="closeTransactionModal()" class="p-1.5 rounded-xl hover:bg-white/15 transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="tx-form" onsubmit="saveTransactionForm(event)" class="p-4 sm:p-5 space-y-3.5">
+        <input type="hidden" id="tx-id" value="" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="tx-type" class="block text-xs font-heading font-semibold text-slate-700 mb-1">ประเภท *</label>
+            <select id="tx-type" onchange="updateTxCategorySuggestions()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white">
+              <option value="income">รายรับ (+)</option>
+              <option value="expense">รายจ่าย (-)</option>
+            </select>
+          </div>
+          <div>
+            <label for="tx-date" class="block text-xs font-heading font-semibold text-slate-700 mb-1">วันที่ *</label>
+            <input id="tx-date" type="date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="tx-category" class="block text-xs font-heading font-semibold text-slate-700 mb-1">หมวดหมู่ *</label>
+            <input id="tx-category" type="text" required autocomplete="off" placeholder="เช่น ขายปลา, ซื้อปลาเข้า, อาหารปลา" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white" />
+          </div>
+          <div>
+            <label for="tx-party" class="block text-xs font-heading font-semibold text-slate-700 mb-1">ลูกค้า / ฟาร์มคู่ค้า</label>
+            <input id="tx-party" type="text" autocomplete="off" placeholder="ระบุชื่อลูกค้าหรือฟาร์ม..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label for="tx-quantity" class="block text-xs font-heading font-semibold text-slate-700 mb-1">จำนวน (ตัว)</label>
+            <input id="tx-quantity" type="number" inputmode="numeric" min="0" value="0" oninput="autoCalcTxAmount()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+          </div>
+          <div>
+            <label for="tx-unitPrice" class="block text-xs font-heading font-semibold text-slate-700 mb-1">ราคา/ตัว</label>
+            <input id="tx-unitPrice" type="number" inputmode="decimal" min="0" step="any" value="0" oninput="autoCalcTxAmount()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" />
+          </div>
+          <div>
+            <label for="tx-amount" class="block text-xs font-heading font-semibold text-[#0f766e] mb-1">ยอดรวม (฿) *</label>
+            <input id="tx-amount" type="number" inputmode="decimal" min="0" step="any" required placeholder="0" class="w-full px-3 py-2 rounded-xl border border-teal-400 bg-teal-50/40 font-semibold" />
+          </div>
+        </div>
+
+        <div>
+          <label for="tx-note" class="block text-xs font-heading font-semibold text-slate-700 mb-1">รายละเอียด / สายพันธุ์</label>
+          <textarea id="tx-note" rows="2" placeholder="ระบุรายละเอียดรายการ เช่น สายพันธุ์ปลา อุปกรณ์..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeTransactionModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-heading font-medium">ยกเลิก</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white text-sm font-heading font-semibold shadow-sm transition">บันทึกรายการ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 4: STRAIN MANAGER ================= -->
+  <div id="strain-manager-modal" class="no-print modal-backdrop fixed inset-0 z-[55] hidden justify-center bg-slate-950/60 px-3 sm:px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
+      <div class="bg-gradient-to-r from-[#0f766e] to-[#0d9488] px-5 py-4 text-white flex items-center justify-between">
+        <div>
+          <h2 class="font-heading font-semibold text-base sm:text-lg">จัดการรายชื่อสายพันธุ์</h2>
+          <p class="text-xs text-teal-100">เพิ่ม แก้ไข หรือลบชื่อสายพันธุ์ (ซิงค์กับชุดปลาทั้งหมดอัตโนมัติ)</p>
+        </div>
+        <button type="button" onclick="closeStrainManager()" class="p-1.5 rounded-xl hover:bg-white/15 transition">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-5 space-y-4">
+        <form onsubmit="addStrainFromManager(event)" class="flex flex-col sm:flex-row gap-2">
+          <input id="strain-manager-new-input" type="text" autocomplete="off" placeholder="พิมพ์ชื่อสายพันธุ์ใหม่ เช่น Albino Koi Red Ear..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-[#0f766e]" />
+          <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white font-heading font-semibold text-sm shadow-sm transition active:scale-95 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            เพิ่มสายพันธุ์
+          </button>
+        </form>
+
+        <div id="strain-manager-edit-box" class="hidden p-3.5 rounded-2xl border-2 border-amber-300 bg-amber-50/70 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-heading font-semibold text-amber-950">กำลังแก้ไขชื่อสายพันธุ์: <strong id="strain-manager-edit-old-label"></strong></span>
+            <span id="strain-manager-edit-usage" class="text-xs text-amber-800"></span>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="strain-manager-edit-input" type="text" autocomplete="off" placeholder="พิมพ์ชื่อสายพันธุ์ใหม่..." class="flex-1 px-3 py-2 rounded-xl border border-amber-300 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/40" />
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="saveManagerEditStrain()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-heading font-semibold">บันทึกชื่อใหม่</button>
+              <button type="button" onclick="cancelManagerEditStrain()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-heading">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+          <span>รายชื่อสายพันธุ์ในระบบ: <strong id="strain-manager-count" class="text-slate-800">0</strong> สายพันธุ์</span>
+          <span>กด แก้ไข หรือ ลบ ได้ทันที</span>
+        </div>
+
+        <div id="strain-manager-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1"></div>
+      </div>
+
+      <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end">
+        <button type="button" onclick="closeStrainManager()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-heading font-medium transition">เสร็จสิ้น</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 5: DELETE STRAIN CONFIRMATION ================= -->
+  <div id="strain-delete-modal" class="no-print modal-backdrop fixed inset-0 z-[65] hidden justify-center bg-slate-950/65 px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-5 border border-slate-200 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="min-w-0">
+          <h3 class="font-heading font-bold text-slate-900 text-base">ยืนยันการลบสายพันธุ์</h3>
+          <p id="strain-delete-message" class="text-sm text-slate-600 mt-1"></p>
+        </div>
+      </div>
+
+      <div id="strain-delete-inuse-options" class="hidden rounded-2xl bg-amber-50 border border-amber-200 p-3.5 space-y-2.5">
+        <p id="strain-delete-warning-text" class="text-xs font-heading font-semibold text-amber-900"></p>
+        <label class="flex items-start gap-2 text-xs text-slate-700 cursor-pointer">
+          <input type="radio" name="strain-delete-mode" value="keep" checked onchange="toggleReassignStrainSelect()" class="mt-0.5 accent-[#0f766e]" />
+          <span><strong>ลบเฉพาะออกจากตัวเลือก</strong> (คงชื่อสายพันธุ์เดิมไว้ในชุดปลาที่มีอยู่)</span>
+        </label>
+        <label id="strain-delete-reassign-label" class="flex items-start gap-2 text-xs text-slate-700 cursor-pointer">
+          <input type="radio" name="strain-delete-mode" value="reassign" onchange="toggleReassignStrainSelect()" class="mt-0.5 accent-[#0f766e]" />
+          <span><strong>ย้ายชุดปลาทั้งหมดไปใช้สายพันธุ์อื่น</strong></span>
+        </label>
+        <div id="strain-delete-reassign-wrap" class="hidden pl-5 pt-1">
+          <select id="strain-delete-reassign-select" class="w-full px-3 py-2 rounded-xl border border-amber-300 bg-white text-slate-800"></select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="closeDeleteStrainModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-heading font-medium">ยกเลิก</button>
+        <button type="button" onclick="confirmDeleteStrain()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-heading font-semibold shadow-sm">ยืนยันลบสายพันธุ์</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 6: CUSTOM CONFIRMATION ================= -->
+  <div id="confirm-modal" class="no-print modal-backdrop fixed inset-0 z-[70] hidden justify-center bg-slate-950/65 px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-5 border border-slate-200 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <h3 id="confirm-title" class="font-heading font-bold text-slate-900 text-base">ยืนยันการดำเนินการ</h3>
+          <p id="confirm-message" class="text-sm text-slate-600 mt-1"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-heading font-medium">ยกเลิก</button>
+        <button type="button" id="confirm-ok-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-heading font-semibold shadow-sm">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast-container" class="no-print fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] pointer-events-none"></div>
+
+  <!-- ================= APPLICATION JAVASCRIPT ================= -->
+  <script>
+    const STORAGE_KEY = 'guppy_farm_tracker_v3';
+    const MIGRATION_KEYS = ['guppy_farm_tracker_v2', 'guppy_farm_tracker_v1', 'guppy_farm_tracker_v8'];
+
+    const THAI_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    const THAI_MONTHS_FULL = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+
+    // Generate 74 standard tanks: A-01..A-28, B-01..B-24, C-01..C-22
+    function generateDefaultTanks() {
+      const tanks = [];
+      const zones = [
+        { prefix: 'A', count: 28 },
+        { prefix: 'B', count: 24 },
+        { prefix: 'C', count: 22 }
+      ];
+      zones.forEach(z => {
+        for (let i = 1; i <= z.count; i++) {
+          tanks.push({ code: `${z.prefix}-${String(i).padStart(2, '0')}`, note: '' });
+        }
+      });
+      return tanks;
+    }
+
+    // Complete Initial Seed Data (26 Fish, 74 Tanks, 12 Strains, 2 Transactions)
+    function getInitialSeedData() {
+      return {
+        fish: [
+          { id: 'gmwa0d7nrziqs', strain: 'Koi dumbo short body', tankCode: 'B-18', groupCode: 'โค่ 2.1', birthDate: '2026-11-09', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-11-10T01:25:23.079Z' },
+          { id: 'gmw245aklep1r', strain: 'Albino blue tail (หูฟ้า)', tankCode: 'B-12', groupCode: 'หูฟ้า 1.2', birthDate: '2026-11-03', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-11-04T12:49:02.661Z' },
+          { id: 'gmvte6yjxci4h', strain: 'Koi dumbo short body', tankCode: 'C-02', groupCode: 'Dumbo 1.1', birthDate: '2026-09-23', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-29T10:20:20.973Z' },
+          { id: 'gmvq0nmb4dtvj', strain: 'Koi dumbo short body', tankCode: 'B-08', groupCode: 'Dumbo 1.2', birthDate: '2026-10-25', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-27T01:38:05.104Z' },
+          { id: 'gmvdqkytwmlc7', strain: 'Albino full red', tankCode: 'B-13', groupCode: 'Full red 1.1', birthDate: '2026-10-17', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-18T11:22:51.092Z' },
+          { id: 'gmv6ocn2rv45y', strain: 'Albino aquamarine ping tail', tankCode: 'A-15', groupCode: 'Pink tail 1.2', birthDate: '2026-09-29', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:46:00.147Z' },
+          { id: 'gmv6obt56cgmc', strain: 'Singa blue', tankCode: 'B-14', groupCode: 'Singa blue 1.2', birthDate: '2026-10-01', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:45:21.354Z' },
+          { id: 'gmv6oapmxhycy', strain: 'Albino blue tail (หูฟ้า)', tankCode: 'C-14', groupCode: 'หูฟ้า 1.1', birthDate: '2026-10-11', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:44:30.153Z' },
+          { id: 'gmv6o9f9dfto6', strain: 'Tuxedo white', tankCode: 'B-02', groupCode: 'Tuxedo white 1-2', birthDate: '2026-10-01', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:43:30.049Z' },
+          { id: 'gmv6o8dn2gu4c', strain: 'Albino blue topaz', tankCode: 'C-15', groupCode: 'Topaz 1.3', birthDate: '2026-10-01', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:42:41.294Z' },
+          { id: 'gmv6o74wjaxx3', strain: 'Koi dumbo short body', tankCode: 'B-07', groupCode: 'Koi dumbo 1.1', birthDate: '2026-09-22', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:41:43.316Z' },
+          { id: 'gmv6o45rt2osa', strain: 'Albino blue topaz', tankCode: 'B-05', groupCode: 'Topaz 1.2', birthDate: '2026-09-25', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:39:24.473Z' },
+          { id: 'gmv6o21u1qkxk', strain: 'Silverado half black', tankCode: 'C-03', groupCode: 'Silverado half black -F1.1', birthDate: '2026-09-22', initialCount: 10, sex: 'รวม', fatherId: '', motherId: '', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:37:46.057Z' },
+          { id: 'gmv6nzyq18sox', strain: 'Tuxedo white', tankCode: 'B-18', groupCode: 'Tuxedo white 1.1', birthDate: '2026-09-26', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:36:08.713Z' },
+          { id: 'gmv6nypbhv5b4', strain: 'Albino blue topaz', tankCode: 'B-17', groupCode: 'Topaz F1.1', birthDate: '2026-09-23', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:35:09.869Z' },
+          { id: 'gmv6nx2bcqs0s', strain: 'Red dragon half moon', tankCode: 'B-16', groupCode: 'HB F1.1', birthDate: '2026-09-23', initialCount: 10, sex: 'รวม', fatherId: 'HB -F0', motherId: 'HB -F0', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:33:53.400Z' },
+          { id: 'gmv6nc7hj5p7t', strain: 'Half black ribbon fin C', tankCode: 'A-14', groupCode: 'Hb F1', birthDate: '2026-08-31', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:17:40.327Z' },
+          { id: 'gmv6nb1tx400z', strain: 'Albino full red', tankCode: 'A-13', groupCode: 'Full red', birthDate: '2026-09-08', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:16:46.341Z' },
+          { id: 'gmv6n7dv1q6a2', strain: 'Singa blue', tankCode: 'A-12', groupCode: 'Singa blue', birthDate: '2026-08-31', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:13:55.309Z' },
+          { id: 'gmv6n4v0j1u7e', strain: 'Albino koi red ear short body', tankCode: 'A-08', groupCode: 'Koi F0', birthDate: '2026-08-01', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:11:57.571Z' },
+          { id: 'gmv6mzagwfshy', strain: 'Red dragon half moon', tankCode: 'A-07', groupCode: 'Red dragon HM F0', birthDate: '2026-07-01', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:07:37.664Z' },
+          { id: 'gmv6mwtbk532b', strain: 'Dumbo red tail half Moon', tankCode: 'A-06', groupCode: 'Dumbo F0', birthDate: '2026-07-01', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:05:42.128Z' },
+          { id: 'gmv6mttz274g7', strain: 'Half black ribbon fin C', tankCode: 'C-05', groupCode: 'HB ribbon fin C F1', birthDate: '2026-10-13', initialCount: 10, sex: 'รวม', fatherId: 'HB F0', motherId: 'HB F0', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:03:23.006Z' },
+          { id: 'gmv6mqz0vy70q', strain: 'Albino blue tail (หูฟ้า)', tankCode: 'A-03', groupCode: 'Blue tail (หูฟ้า)', birthDate: '2026-07-01', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'farm', farmName: '-', source: 'นำเข้าจากฟาร์ม: -', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T12:01:09.583Z' },
+          { id: 'gmv6mmp9z9kfm', strain: 'Tuxedo white', tankCode: 'A-02', groupCode: 'Tuxedo white F0', birthDate: '2026-08-01', initialCount: 10, sex: 'รวม', fatherId: '-', motherId: '-', sourceType: 'farm', farmName: '-', source: 'นำเข้าจากฟาร์ม: -', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T11:57:50.327Z' },
+          { id: 'gmv6mkirx65d4', strain: 'Albino aquamarine ping tail', tankCode: 'A-01', groupCode: '-', birthDate: '2026-10-11', initialCount: 10, sex: 'รวม', fatherId: 'Pink tail F0', motherId: 'Pink tail F0', sourceType: 'own', farmName: '', source: 'เพาะเอง', notes: '', addedCount: 0, deadCount: 0, createdAt: '2026-10-13T11:56:08.589Z' }
+        ],
+        tanks: generateDefaultTanks(),
+        events: [],
+        transactions: [
+          { id: 'gmvdy82gejobh', type: 'income', date: '2026-10-18', category: 'ขายปลา', amount: 100, quantity: 2, unitPrice: 50, groupId: '', groupCode: '', party: '', note: 'Albino blue tail', createdAt: '2026-10-18T14:56:46.190Z', updatedAt: '2026-10-18T14:56:46.190Z' },
+          { id: 'gmv6oey7zruif', type: 'expense', date: '2026-10-13', category: 'ซื้อปลาเข้า', amount: 340, quantity: 0, unitPrice: 0, groupId: '', groupCode: '', party: 'Jojo nakhonnan guppy', note: 'Koi dumbo short body ribbon fin c', createdAt: '2026-10-13T12:47:47.903Z', updatedAt: '2026-10-13T14:38:38.351Z' }
+        ],
+        pedigreePairs: [],
+        strains: [
+          'Albino aquamarine ping tail',
+          'Tuxedo white',
+          'Albino blue tail (หูฟ้า)',
+          'Half black ribbon fin C',
+          'Dumbo red tail half Moon',
+          'Red dragon half moon',
+          'Albino koi red ear short body',
+          'Singa blue',
+          'Albino full red',
+          'Albino blue topaz',
+          'Silverado half black',
+          'Koi dumbo short body'
+        ],
+        exportedAt: '2026-11-19T07:23:55.132Z',
+        appVersion: 'Fish Tank Tracker 8'
+      };
+    }
+
+    // ================= APPLICATION STATE =================
+    let appData = null;
+    let activeTab = 'fish';
+    let tankMapFilter = 'all';
+    let financeFilter = 'all';
+    let printMode = 'labels';
+    let referenceDateISO = '';
+    let sexSepFilterActive = false;
+    let selectedLabelIds = new Set();
+    let pendingConfirmCallback = null;
+    let managerEditingStrainOldName = null;
+    let pendingDeleteStrainName = null;
+    let backdropPointerStartId = null;
+
+    // ================= UTILITIES =================
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function generateId() {
+      return 'gm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function getTodayISO() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseLocalDate(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return null;
+      const parts = dateStr.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function getReferenceMidnight() {
+      const ref = parseLocalDate(referenceDateISO);
+      if (ref) return ref;
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function formatThaiDate(dateStr, fullMonth = false) {
+      const d = parseLocalDate(dateStr);
+      if (!d) return '-';
+      const day = d.getDate();
+      const month = fullMonth ? THAI_MONTHS_FULL[d.getMonth()] : THAI_MONTHS_SHORT[d.getMonth()];
+      const beYear = d.getFullYear() + 543;
+      return `${day} ${month} ${beYear}`;
+    }
+
+    function formatNumber(n) {
+      return Number(n || 0).toLocaleString('th-TH');
+    }
+
+    function calcAge(birthDateStr) {
+      const birth = parseLocalDate(birthDateStr);
+      const ref = getReferenceMidnight();
+      if (!birth) {
+        return { totalDays: 0, months: 0, days: 0, text: 'ไม่ระบุวันเกิด', shortText: '-', isFuture: false };
+      }
+
+      const diffMs = ref.getTime() - birth.getTime();
+      const totalDays = Math.floor(diffMs / 86400000);
+
+      if (totalDays < 0) {
+        const ahead = Math.abs(totalDays);
+        return {
+          totalDays,
+          months: 0,
+          days: 0,
+          text: `อีก ${ahead} วัน (ล่วงหน้า)`,
+          shortText: `-${ahead} วัน`,
+          isFuture: true
+        };
+      }
+
+      let years = ref.getFullYear() - birth.getFullYear();
+      let months = ref.getMonth() - birth.getMonth();
+      let days = ref.getDate() - birth.getDate();
+
+      if (days < 0) {
+        months -= 1;
+        const prevMonthDays = new Date(ref.getFullYear(), ref.getMonth(), 0).getDate();
+        days += prevMonthDays;
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+
+      const totalMonths = years * 12 + months;
+      let text = '';
+      if (totalMonths > 0) {
+        text = `${totalMonths} เดือน` + (days > 0 ? ` ${days} วัน` : '');
+      } else {
+        text = `${totalDays} วัน`;
+      }
+
+      return { totalDays, months: totalMonths, days, text, shortText: `${totalDays} วัน`, isFuture: false };
+    }
+
+    function getLifeStage(totalDays) {
+      if (totalDays < 30) {
+        return {
+          key: 'fry',
+          label: 'ลูกปลาอนุบาล',
+          badgeClass: 'bg-sky-100 text-sky-800 border-sky-200',
+          printBg: '#e0f2fe',
+          printColor: '#075985',
+          dotClass: 'bg-sky-500',
+          tankClass: 'bg-sky-50/90 border-sky-300 hover:border-sky-500',
+          agePillClass: 'bg-sky-600 text-white'
+        };
+      }
+      if (totalDays < 60) {
+        return {
+          key: 'coloring',
+          label: 'กำลังขึ้นสี / แยกเพศ',
+          badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+          printBg: '#fef3c7',
+          printColor: '#92400e',
+          dotClass: 'bg-amber-500',
+          tankClass: 'bg-amber-50/90 border-amber-300 hover:border-amber-500',
+          agePillClass: 'bg-amber-600 text-white'
+        };
+      }
+      if (totalDays < 90) {
+        return {
+          key: 'juvenile',
+          label: 'วัยรุ่น / ฟอร์มสวย',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          printBg: '#d1fae5',
+          printColor: '#065f46',
+          dotClass: 'bg-emerald-500',
+          tankClass: 'bg-emerald-50/90 border-emerald-300 hover:border-emerald-500',
+          agePillClass: 'bg-emerald-600 text-white'
+        };
+      }
+      return {
+        key: 'breeder',
+        label: 'พ่อแม่พันธุ์',
+        badgeClass: 'bg-purple-100 text-purple-800 border-purple-200',
+        printBg: '#f3e8ff',
+        printColor: '#6b21a8',
+        dotClass: 'bg-purple-500',
+        tankClass: 'bg-purple-50/90 border-purple-300 hover:border-purple-500',
+        agePillClass: 'bg-purple-600 text-white'
+      };
+    }
+
+    function needsSexSeparation(fish) {
+      const age = calcAge(fish.birthDate);
+      return age.totalDays >= 30 && age.totalDays <= 45 && (fish.sex || 'รวม') === 'รวม';
+    }
+
+    function getLiveCount(f) {
+      const init = Number(f.initialCount) || 0;
+      const added = Number(f.addedCount) || 0;
+      const dead = Number(f.deadCount) || 0;
+      return Math.max(0, init + added - dead);
+    }
+
+    function getTankZone(tankCode) {
+      if (!tankCode) return '';
+      const ch = tankCode.trim().toUpperCase().charAt(0);
+      return ['A', 'B', 'C'].includes(ch) ? ch : 'OTHER';
+    }
+
+    function getDuplicateTanksMap() {
+      const map = {};
+      appData.fish.forEach(f => {
+        const code = (f.tankCode || '').trim().toUpperCase();
+        if (!code) return;
+        if (!map[code]) map[code] = [];
+        map[code].push(f);
+      });
+      const dupes = {};
+      Object.keys(map).forEach(code => {
+        if (map[code].length > 1) dupes[code] = map[code];
+      });
+      return dupes;
+    }
+
+    // ================= PERSISTENCE & MIGRATION =================
+    function normalizeData(raw, syncMissingStrainsFromFish = false) {
+      const seed = getInitialSeedData();
+      const hasStrainsArray = Array.isArray(raw.strains);
+      const normalized = {
+        fish: Array.isArray(raw.fish) ? raw.fish : seed.fish,
+        tanks: Array.isArray(raw.tanks) && raw.tanks.length > 0 ? raw.tanks : generateDefaultTanks(),
+        events: Array.isArray(raw.events) ? raw.events : [],
+        transactions: Array.isArray(raw.transactions) ? raw.transactions : [],
+        pedigreePairs: Array.isArray(raw.pedigreePairs) ? raw.pedigreePairs : [],
+        strains: hasStrainsArray
+          ? [...new Set(raw.strains.map(s => String(s || '').trim()).filter(Boolean))]
+          : [...seed.strains],
+        exportedAt: raw.exportedAt || new Date().toISOString(),
+        appVersion: 'Fish Tank Tracker 8'
+      };
+
+      if (!hasStrainsArray || syncMissingStrainsFromFish) {
+        const set = new Set(normalized.strains);
+        normalized.fish.forEach(f => {
+          const st = (f.strain || '').trim();
+          if (st && !set.has(st)) {
+            set.add(st);
+            normalized.strains.push(st);
+          }
+        });
+      }
+      return normalized;
+    }
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          appData = normalizeData(JSON.parse(saved), false);
+          return;
+        }
+        for (const oldKey of MIGRATION_KEYS) {
+          const legacy = localStorage.getItem(oldKey);
+          if (legacy) {
+            appData = normalizeData(JSON.parse(legacy), false);
+            saveData(true);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('localStorage load unavailable, using initial dataset:', err);
+      }
+      appData = getInitialSeedData();
+      saveData(true);
+    }
+
+    function saveData(silent = false) {
+      try {
+        appData.exportedAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch (err) {
+        console.warn('localStorage save blocked:', err);
+        if (!silent) {
+          showToast('เบราว์เซอร์บล็อกการบันทึกอัตโนมัติ แนะนำให้กด "ส่งออก JSON" เพื่อสำรองข้อมูล', 'warning');
+        }
+      }
+    }
+
+    // ================= TOAST & CUSTOM CONFIRM MODAL =================
+    let toastTimer = null;
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        success: 'bg-slate-900 text-white border-teal-400/60',
+        warning: 'bg-amber-900 text-amber-50 border-amber-400/70',
+        error: 'bg-rose-900 text-rose-50 border-rose-400/70'
+      };
+      container.innerHTML = `
+        <div class="toast-enter pointer-events-auto px-4 py-2.5 rounded-2xl border shadow-xl text-xs sm:text-sm font-medium flex items-center gap-2 max-w-[92vw] ${colors[type] || colors.success}">
+          <span>${escapeHtml(message)}</span>
+        </div>
+      `;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { container.innerHTML = ''; }, 3500);
+    }
+
+    function openConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      pendingConfirmCallback = onConfirm;
+      const modal = document.getElementById('confirm-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeConfirmModal() {
+      pendingConfirmCallback = null;
+      const modal = document.getElementById('confirm-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+      const cb = pendingConfirmCallback;
+      closeConfirmModal();
+      if (typeof cb === 'function') cb();
+    });
+
+    // ================= REFERENCE DATE & NAVIGATION =================
+    function onReferenceDateChange() {
+      const val = document.getElementById('ref-date-input').value;
+      if (val) {
+        referenceDateISO = val;
+        renderAll();
+      }
+    }
+
+    function resetReferenceDateToToday() {
+      referenceDateISO = getTodayISO();
+      document.getElementById('ref-date-input').value = referenceDateISO;
+      renderAll();
+      showToast(`คำนวณอายุ ณ วันนี้ (${formatThaiDate(referenceDateISO)})`);
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      const tabs = ['fish', 'tanks', 'labels', 'finance'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+        if (t === tab) {
+          btn.classList.add('bg-teal-300', 'text-[#08363c]', 'shadow-sm');
+          btn.classList.remove('text-teal-100', 'hover:bg-white/10');
+          panel.classList.remove('hidden');
+        } else {
+          btn.classList.remove('bg-teal-300', 'text-[#08363c]', 'shadow-sm');
+          btn.classList.add('text-teal-100', 'hover:bg-white/10');
+          panel.classList.add('hidden');
+        }
+      });
+
+      const summary = document.getElementById('dashboard-summary');
+      summary.classList.toggle('hidden', !(tab === 'fish' || tab === 'tanks'));
+
+      if (tab === 'fish') renderFishListOnly();
+      if (tab === 'tanks') renderTankMap();
+      if (tab === 'labels') renderPrintTab();
+      if (tab === 'finance') renderFinanceTab();
+    }
+
+    // ================= DASHBOARD & SMART BANNERS =================
+    function renderDashboard() {
+      const totalBatches = appData.fish.length;
+      let totalLiveFish = 0;
+      const occupiedSet = new Set();
+      const stageCounts = { fry: 0, coloring: 0, juvenile: 0, breeder: 0 };
+
+      appData.fish.forEach(f => {
+        totalLiveFish += getLiveCount(f);
+        if (f.tankCode) occupiedSet.add(f.tankCode.trim().toUpperCase());
+        const age = calcAge(f.birthDate);
+        const st = getLifeStage(age.totalDays);
+        stageCounts[st.key]++;
+      });
+
+      const totalTanks = appData.tanks.length;
+      const occupiedCount = occupiedSet.size;
+      const emptyCount = Math.max(0, totalTanks - occupiedCount);
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      appData.transactions.forEach(tx => {
+        const amt = Number(tx.amount) || 0;
+        if (tx.type === 'income') totalIncome += amt;
+        else totalExpense += amt;
+      });
+      const netBalance = totalIncome - totalExpense;
+
+      document.getElementById('kpi-batches').textContent = formatNumber(totalBatches);
+      document.getElementById('kpi-total-fish').textContent = formatNumber(totalLiveFish);
+      document.getElementById('kpi-occupied-tanks').textContent = formatNumber(occupiedCount);
+      document.getElementById('kpi-total-tanks').textContent = formatNumber(totalTanks);
+      document.getElementById('kpi-empty-tanks').textContent = formatNumber(emptyCount);
+      document.getElementById('kpi-strains').textContent = formatNumber(appData.strains.length);
+
+      const kpiNetEl = document.getElementById('kpi-net-balance');
+      kpiNetEl.textContent = `${netBalance < 0 ? '-' : ''}฿${formatNumber(Math.abs(netBalance))}`;
+      kpiNetEl.className = `font-heading text-xl sm:text-2xl font-bold leading-tight ${netBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+
+      Object.keys(stageCounts).forEach(k => {
+        const countEl = document.getElementById(`stage-count-${k}`);
+        if (countEl) countEl.textContent = stageCounts[k];
+      });
+
+      updateStageCardHighlight();
+      renderDuplicateBanner();
+      renderSexSepBanner();
+      populateFilterStrainDropdown();
+    }
+
+    function updateStageCardHighlight() {
+      const currentStageFilter = document.getElementById('filter-stage').value;
+      ['fry', 'coloring', 'juvenile', 'breeder'].forEach(k => {
+        const card = document.getElementById(`stage-card-${k}`);
+        if (!card) return;
+        if (currentStageFilter === k && !sexSepFilterActive) {
+          card.classList.add('ring-2', 'ring-[#0f766e]', 'bg-teal-50/50');
+        } else {
+          card.classList.remove('ring-2', 'ring-[#0f766e]', 'bg-teal-50/50');
+        }
+      });
+    }
+
+    function renderDuplicateBanner() {
+      const dupes = getDuplicateTanksMap();
+      const dupeCodes = Object.keys(dupes).sort();
+      const banner = document.getElementById('duplicate-banner');
+      const btnWrap = document.getElementById('duplicate-tank-buttons');
+      const detailEl = document.getElementById('duplicate-banner-detail');
+
+      if (dupeCodes.length > 0) {
+        banner.classList.remove('hidden');
+        const descParts = dupeCodes.map(c => `ตู้ ${c} (${dupes[c].length} ชุด)`);
+        detailEl.textContent = `พบ ${descParts.join(', ')} — กดปุ่มเพื่อดูรายการหรือกดแก้ไขย้ายตู้ได้ทันที`;
+
+        let btnsHtml = '';
+        dupeCodes.forEach(code => {
+          btnsHtml += `
+            <button type="button" onclick="openTankDetailModal('${escapeHtml(code)}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-heading font-semibold shadow-xs transition active:scale-95">
+              <span>แก้ไขตู้ ${escapeHtml(code)}</span>
+              <span class="bg-white/25 px-1.5 py-0.5 rounded-md text-[10px]">${dupes[code].length} ชุด</span>
+            </button>
+          `;
+          btnsHtml += `
+            <button type="button" onclick="filterByTankCode('${escapeHtml(code)}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-heading font-medium transition">
+              กรองดูในตาราง
+            </button>
+          `;
+        });
+        btnWrap.innerHTML = btnsHtml;
+      } else {
+        banner.classList.add('hidden');
+        btnWrap.innerHTML = '';
+      }
+    }
+
+    function renderSexSepBanner() {
+      const targets = appData.fish.filter(needsSexSeparation);
+      const banner = document.getElementById('sex-sep-banner');
+      const detailEl = document.getElementById('sex-sep-banner-detail');
+      const btn = document.getElementById('btn-filter-sex-sep');
+
+      if (targets.length > 0) {
+        banner.classList.remove('hidden');
+        const tankList = targets.slice(0, 6).map(f => f.tankCode).join(', ') + (targets.length > 6 ? ` และอีก ${targets.length - 6} ตู้` : '');
+        detailEl.textContent = `พบ ${targets.length} ชุดที่ถึงวัยควรแยกเพศผู้-เมียเพื่อป้องกันผสมกันเองก่อนคัดเกรด (${tankList})`;
+        btn.textContent = sexSepFilterActive ? 'แสดงทั้งหมด (ยกเลิกกรองแยกเพศ)' : `กรองดูทั้ง ${targets.length} ชุด`;
+        btn.className = sexSepFilterActive
+          ? 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-heading font-semibold shadow-xs transition active:scale-95'
+          : 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-heading font-semibold shadow-xs transition active:scale-95';
+      } else {
+        banner.classList.add('hidden');
+        if (sexSepFilterActive) sexSepFilterActive = false;
+      }
+    }
+
+    function toggleSexSepFilter() {
+      sexSepFilterActive = !sexSepFilterActive;
+      if (sexSepFilterActive) {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-zone').value = 'all';
+        document.getElementById('filter-strain').value = 'all';
+        document.getElementById('filter-stage').value = 'all';
+        if (activeTab !== 'fish') switchTab('fish');
+      }
+      renderSexSepBanner();
+      updateStageCardHighlight();
+      renderFishListOnly();
+    }
+
+    function populateFilterStrainDropdown() {
+      const sel = document.getElementById('filter-strain');
+      const prev = sel.value;
+      const combined = new Set(appData.strains);
+      appData.fish.forEach(f => { if (f.strain) combined.add(f.strain); });
+      const strains = [...combined].sort((a, b) => a.localeCompare(b));
+      sel.innerHTML = `<option value="all">ทุกสายพันธุ์ (${strains.length})</option>` +
+        strains.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      if ([...sel.options].some(o => o.value === prev)) {
+        sel.value = prev;
+      }
+    }
+
+    function toggleStageFilter(stageKey) {
+      sexSepFilterActive = false;
+      renderSexSepBanner();
+      const sel = document.getElementById('filter-stage');
+      sel.value = (sel.value === stageKey) ? 'all' : stageKey;
+      if (activeTab !== 'fish') switchTab('fish');
+      updateStageCardHighlight();
+      renderFishListOnly();
+    }
+
+    function onStageDropdownChange() {
+      sexSepFilterActive = false;
+      renderSexSepBanner();
+      updateStageCardHighlight();
+      renderFishListOnly();
+    }
+
+    function filterByTankCode(code) {
+      sexSepFilterActive = false;
+      renderSexSepBanner();
+      document.getElementById('filter-search').value = code;
+      document.getElementById('filter-zone').value = 'all';
+      document.getElementById('filter-strain').value = 'all';
+      document.getElementById('filter-stage').value = 'all';
+      if (activeTab !== 'fish') switchTab('fish');
+      updateStageCardHighlight();
+      renderFishListOnly();
+      showToast(`กรองแสดงเฉพาะชุดปลาในตู้ ${code}`);
+    }
+
+    function clearFishFilters() {
+      sexSepFilterActive = false;
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-zone').value = 'all';
+      document.getElementById('filter-strain').value = 'all';
+      document.getElementById('filter-stage').value = 'all';
+      document.getElementById('filter-sort').value = 'age_desc';
+      renderSexSepBanner();
+      updateStageCardHighlight();
+      renderFishListOnly();
+    }
+
+    // ================= TAB 1: FISH LIST =================
+    function getFilteredSortedFish() {
+      const q = (document.getElementById('filter-search').value || '').trim().toLowerCase();
+      const zone = document.getElementById('filter-zone').value;
+      const strain = document.getElementById('filter-strain').value;
+      const stage = document.getElementById('filter-stage').value;
+      const sort = document.getElementById('filter-sort').value;
+
+      const enriched = appData.fish.map(f => {
+        const age = calcAge(f.birthDate);
+        const st = getLifeStage(age.totalDays);
+        return { ...f, _age: age, _stage: st, _live: getLiveCount(f), _needsSep: needsSexSeparation(f) };
+      });
+
+      const filtered = enriched.filter(f => {
+        if (sexSepFilterActive && !f._needsSep) return false;
+        if (zone !== 'all' && getTankZone(f.tankCode) !== zone) return false;
+        if (strain !== 'all' && f.strain !== strain) return false;
+        if (stage !== 'all' && f._stage.key !== stage) return false;
+        if (q) {
+          const hay = [f.tankCode, f.strain, f.groupCode, f.notes, f.fatherId, f.motherId, f.farmName, f.source]
+            .join(' ')
+            .toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (sort === 'age_desc') {
+          if (b._age.totalDays !== a._age.totalDays) return b._age.totalDays - a._age.totalDays;
+          return (a.tankCode || '').localeCompare(b.tankCode || '', undefined, { numeric: true });
+        }
+        if (sort === 'age_asc') {
+          if (a._age.totalDays !== b._age.totalDays) return a._age.totalDays - b._age.totalDays;
+          return (a.tankCode || '').localeCompare(b.tankCode || '', undefined, { numeric: true });
+        }
+        if (sort === 'tank_asc') {
+          return (a.tankCode || '').localeCompare(b.tankCode || '', undefined, { numeric: true });
+        }
+        if (sort === 'strain_asc') {
+          const cmp = (a.strain || '').localeCompare(b.strain || '');
+          return cmp !== 0 ? cmp : (a.tankCode || '').localeCompare(b.tankCode || '', undefined, { numeric: true });
+        }
+        if (sort === 'birth_desc') {
+          return (b.birthDate || '').localeCompare(a.birthDate || '');
+        }
+        return 0;
+      });
+
+      return filtered;
+    }
+
+    function renderFishListOnly() {
+      const list = getFilteredSortedFish();
+      const dupes = getDuplicateTanksMap();
+
+      const hasFilter =
+        sexSepFilterActive ||
+        (document.getElementById('filter-search').value || '').trim() !== '' ||
+        document.getElementById('filter-zone').value !== 'all' ||
+        document.getElementById('filter-strain').value !== 'all' ||
+        document.getElementById('filter-stage').value !== 'all';
+
+      document.getElementById('fish-list-count').innerHTML =
+        `แสดง <strong class="text-slate-800">${list.length}</strong> จากทั้งหมด ${appData.fish.length} ชุด` +
+        (sexSepFilterActive ? ` <span class="ml-1.5 px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-medium">กรองเฉพาะชุดรอแยกเพศ (30–45 วัน)</span>` : '');
+      document.getElementById('btn-clear-filters').classList.toggle('hidden', !hasFilter);
+
+      const tbody = document.getElementById('fishListBody');
+      const mobileWrap = document.getElementById('fishMobileCards');
+      const emptyEl = document.getElementById('fish-empty-state');
+
+      if (list.length === 0) {
+        tbody.innerHTML = '';
+        mobileWrap.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      tbody.innerHTML = list.map(f => {
+        const tankUpper = (f.tankCode || '').trim().toUpperCase();
+        const isDupe = Boolean(dupes[tankUpper]);
+        const parentText = (f.fatherId && f.fatherId !== '-') || (f.motherId && f.motherId !== '-')
+          ? `พ่อ: ${f.fatherId || '-'} / แม่: ${f.motherId || '-'}`
+          : '';
+        const sourceBadge = f.sourceType === 'farm'
+          ? `<span class="inline-block text-[11px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">นำเข้า${f.farmName && f.farmName !== '-' ? ': ' + escapeHtml(f.farmName) : ''}</span>`
+          : `<span class="inline-block text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">เพาะเอง</span>`;
+
+        return `
+          <tr class="hover:bg-teal-50/40 transition ${isDupe ? 'bg-amber-50/40' : ''}">
+            <td class="py-3 px-4 align-top">
+              <div class="inline-flex flex-col items-start gap-1">
+                <span class="font-heading font-bold text-sm px-2.5 py-1 rounded-xl ${isDupe ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-[#0f766e] text-white'}">${escapeHtml(f.tankCode || '-')}</span>
+                ${isDupe ? `<span class="text-[10px] font-semibold text-rose-600">ซ้ำ ${dupes[tankUpper].length} ชุด</span>` : ''}
+              </div>
+            </td>
+            <td class="py-3 px-4 align-top">
+              <div class="font-heading font-semibold text-slate-900 flex flex-wrap items-center gap-1.5">
+                <span>${escapeHtml(f.strain)}</span>
+                ${f._needsSep ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">ควรแยกเพศ</span>` : ''}
+              </div>
+              <div class="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2">
+                <span>รุ่น: <strong class="text-slate-700">${escapeHtml(f.groupCode || '-')}</strong></span>
+                ${parentText ? `<span class="text-slate-300">|</span><span class="text-[#0f766e]">${escapeHtml(parentText)}</span>` : ''}
+              </div>
+              ${f.notes ? `<div class="text-xs text-slate-500 italic mt-1">หมายเหตุ: ${escapeHtml(f.notes)}</div>` : ''}
+            </td>
+            <td class="py-3 px-4 align-top whitespace-nowrap">
+              <div class="font-medium text-slate-800">${formatThaiDate(f.birthDate)}</div>
+              <div class="text-[11px] text-slate-400">${escapeHtml(f.birthDate || '')}</div>
+            </td>
+            <td class="py-3 px-4 align-top whitespace-nowrap">
+              <div class="font-heading font-bold text-slate-900">${escapeHtml(f._age.text)}</div>
+              <div class="text-xs text-[#0f766e] font-medium">(${formatNumber(f._age.totalDays)} วัน)</div>
+            </td>
+            <td class="py-3 px-4 align-top whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-heading font-medium border ${f._stage.badgeClass}">
+                <span class="w-2 h-2 rounded-full ${f._stage.dotClass}"></span>
+                ${f._stage.label}
+              </span>
+            </td>
+            <td class="py-3 px-4 align-top text-center">
+              <div class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1">
+                <button type="button" onclick="quickAdjustCount('${escapeHtml(f.id)}', 'dead')" title="ลดจำนวน 1 ตัว (ตาย/ออก)" class="w-7 h-7 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 font-bold text-sm flex items-center justify-center transition active:scale-90">-</button>
+                <span class="font-heading font-bold text-slate-900 min-w-[2.2rem] text-center">${f._live}</span>
+                <button type="button" onclick="quickAdjustCount('${escapeHtml(f.id)}', 'add')" title="เพิ่มจำนวน 1 ตัว" class="w-7 h-7 rounded-lg bg-white hover:bg-emerald-50 text-emerald-600 border border-slate-200 font-bold text-sm flex items-center justify-center transition active:scale-90">+</button>
+              </div>
+              ${(f.addedCount > 0 || f.deadCount > 0) ? `<div class="text-[10px] text-slate-400 mt-0.5">ตั้งต้น ${f.initialCount} (+${f.addedCount}/-${f.deadCount})</div>` : ''}
+            </td>
+            <td class="py-3 px-4 align-top">
+              <div class="flex flex-wrap items-center gap-1">
+                <span class="text-xs font-medium px-2 py-0.5 rounded-lg bg-teal-50 text-[#0f766e] border border-teal-200">เพศ: ${escapeHtml(f.sex || 'รวม')}</span>
+                ${sourceBadge}
+              </div>
+            </td>
+            <td class="py-3 px-4 align-top text-right whitespace-nowrap">
+              <div class="inline-flex items-center gap-1">
+                <button type="button" onclick="openFishModal('${escapeHtml(f.id)}')" class="p-2 rounded-xl text-slate-600 hover:text-[#0f766e] hover:bg-teal-50 transition" title="แก้ไขข้อมูล">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button type="button" onclick="requestDeleteFish('${escapeHtml(f.id)}')" class="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="ลบชุดปลา">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      mobileWrap.innerHTML = list.map(f => {
+        const tankUpper = (f.tankCode || '').trim().toUpperCase();
+        const isDupe = Boolean(dupes[tankUpper]);
+        return `
+          <div class="bg-white rounded-2xl p-4 border ${isDupe ? 'border-rose-300 bg-amber-50/30' : 'border-slate-200/90'} shadow-sm space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-2.5 min-w-0">
+                <div class="shrink-0 text-center">
+                  <span class="block font-heading font-bold text-sm px-2.5 py-1 rounded-xl ${isDupe ? 'bg-rose-600 text-white' : 'bg-[#0f766e] text-white'}">${escapeHtml(f.tankCode || '-')}</span>
+                  ${isDupe ? `<span class="block text-[10px] font-semibold text-rose-600 mt-0.5">ซ้ำ ${dupes[tankUpper].length} ชุด</span>` : ''}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-heading font-bold text-slate-900 text-sm leading-snug">${escapeHtml(f.strain)}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">รุ่น: <strong class="text-slate-700">${escapeHtml(f.groupCode || '-')}</strong> • เพศ: ${escapeHtml(f.sex || 'รวม')}</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1 shrink-0">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-heading font-medium border ${f._stage.badgeClass}">
+                  <span class="w-1.5 h-1.5 rounded-full ${f._stage.dotClass}"></span>
+                  ${f._stage.label}
+                </span>
+                ${f._needsSep ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">ควรแยกเพศ</span>` : ''}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-100">
+              <div>
+                <p class="text-[11px] text-slate-500">วันเกิด</p>
+                <p class="font-semibold text-xs text-slate-800">${formatThaiDate(f.birthDate)}</p>
+              </div>
+              <div>
+                <p class="text-[11px] text-slate-500">อายุปลา</p>
+                <p class="font-heading font-bold text-xs text-[#0f766e]">${escapeHtml(f._age.text)} <span class="font-normal text-slate-500">(${f._age.totalDays} วัน)</span></p>
+              </div>
+            </div>
+
+            ${f.notes ? `<p class="text-xs text-slate-500 italic">หมายเหตุ: ${escapeHtml(f.notes)}</p>` : ''}
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <div class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1">
+                <button type="button" onclick="quickAdjustCount('${escapeHtml(f.id)}', 'dead')" class="w-8 h-8 rounded-lg bg-white text-rose-600 border border-slate-200 font-bold text-base flex items-center justify-center active:scale-90">-</button>
+                <span class="font-heading font-bold text-sm text-slate-900 px-2">${f._live} ตัว</span>
+                <button type="button" onclick="quickAdjustCount('${escapeHtml(f.id)}', 'add')" class="w-8 h-8 rounded-lg bg-white text-emerald-600 border border-slate-200 font-bold text-base flex items-center justify-center active:scale-90">+</button>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openFishModal('${escapeHtml(f.id)}')" class="px-3.5 py-2 rounded-xl bg-teal-50 text-[#0f766e] border border-teal-200 text-xs font-heading font-semibold">แก้ไข</button>
+                <button type="button" onclick="requestDeleteFish('${escapeHtml(f.id)}')" class="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-heading font-semibold">ลบ</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function quickAdjustCount(id, action) {
+      const fish = appData.fish.find(f => f.id === id);
+      if (!fish) return;
+      if (action === 'add') {
+        fish.addedCount = (Number(fish.addedCount) || 0) + 1;
+        showToast(`เพิ่มปลา +1 ตัว ในตู้ ${fish.tankCode} (คงเหลือ ${getLiveCount(fish)} ตัว)`);
+      } else if (action === 'dead') {
+        if (getLiveCount(fish) <= 0) {
+          showToast(`ตู้ ${fish.tankCode} มีจำนวนปลาคงเหลือ 0 ตัวแล้ว`, 'warning');
+          return;
+        }
+        fish.deadCount = (Number(fish.deadCount) || 0) + 1;
+        showToast(`ลดจำนวน -1 ตัว ในตู้ ${fish.tankCode} (คงเหลือ ${getLiveCount(fish)} ตัว)`);
+      }
+      saveData();
+      renderAll();
+    }
+
+    // ================= FISH ADD / EDIT MODAL =================
+    function populateTankSelect(selectedCode = '') {
+      const sel = document.getElementById('fish-tankCode');
+      const countByTank = {};
+      appData.fish.forEach(f => {
+        const c = (f.tankCode || '').trim().toUpperCase();
+        countByTank[c] = (countByTank[c] || 0) + 1;
+      });
+
+      const allCodes = appData.tanks.map(t => t.code);
+      if (selectedCode && !allCodes.includes(selectedCode)) {
+        allCodes.unshift(selectedCode);
+      }
+
+      sel.innerHTML = allCodes.map(code => {
+        const cnt = countByTank[code] || 0;
+        const status = cnt > 0 ? ` (มีปลา ${cnt} ชุด)` : ' (ว่าง)';
+        return `<option value="${escapeHtml(code)}" ${code === selectedCode ? 'selected' : ''}>${escapeHtml(code)}${status}</option>`;
+      }).join('');
+    }
+
+    function populateModalStrainSelect(selectedStrain = '') {
+      const sel = document.getElementById('fish-strain');
+      const managed = [...new Set(appData.strains)];
+      let optionsHtml = '';
+
+      if (selectedStrain && !managed.includes(selectedStrain)) {
+        optionsHtml += `<option value="${escapeHtml(selectedStrain)}" selected>${escapeHtml(selectedStrain)} (ชื่อเดิม)</option>`;
+      }
+
+      if (managed.length === 0 && !selectedStrain) {
+        optionsHtml = `<option value="">-- ยังไม่มีสายพันธุ์ กรุณากด + เพิ่ม --</option>`;
+      } else {
+        optionsHtml += managed.map(s =>
+          `<option value="${escapeHtml(s)}" ${s === selectedStrain ? 'selected' : ''}>${escapeHtml(s)}</option>`
+        ).join('');
+      }
+
+      sel.innerHTML = optionsHtml;
+    }
+
+    function openFishModal(fishId = null, prefillTankCode = null) {
+      document.getElementById('fish-form').reset();
+      closeQuickStrainPanels();
+
+      const fish = fishId ? appData.fish.find(f => f.id === fishId) : null;
+
+      if (fish) {
+        document.getElementById('fish-modal-title').textContent = `แก้ไขข้อมูลปลา — ตู้ ${fish.tankCode}`;
+        document.getElementById('fish-id').value = fish.id;
+        populateTankSelect(fish.tankCode);
+        populateModalStrainSelect(fish.strain);
+        document.getElementById('fish-groupCode').value = fish.groupCode || '';
+        document.getElementById('fish-birthDate').value = fish.birthDate || getTodayISO();
+        document.getElementById('fish-sex').value = fish.sex || 'รวม';
+        document.getElementById('fish-initialCount').value = Number(fish.initialCount) || 0;
+        document.getElementById('fish-addedCount').value = Number(fish.addedCount) || 0;
+        document.getElementById('fish-deadCount').value = Number(fish.deadCount) || 0;
+        document.getElementById('fish-fatherId').value = fish.fatherId || '';
+        document.getElementById('fish-motherId').value = fish.motherId || '';
+        document.getElementById('fish-sourceType').value = fish.sourceType || 'own';
+        document.getElementById('fish-farmName').value = fish.farmName || '';
+        document.getElementById('fish-notes').value = fish.notes || '';
+        document.getElementById('btn-delete-fish-modal').classList.remove('hidden');
+      } else {
+        document.getElementById('fish-modal-title').textContent = prefillTankCode
+          ? `เพิ่มชุดปลาใหม่ลงตู้ ${prefillTankCode}`
+          : 'เพิ่มชุดปลาใหม่';
+        document.getElementById('fish-id').value = '';
+        populateTankSelect(prefillTankCode || 'A-04');
+        populateModalStrainSelect(appData.strains[0] || '');
+        document.getElementById('fish-birthDate').value = getTodayISO();
+        document.getElementById('fish-sex').value = 'รวม';
+        document.getElementById('fish-initialCount').value = 10;
+        document.getElementById('fish-addedCount').value = 0;
+        document.getElementById('fish-deadCount').value = 0;
+        document.getElementById('fish-sourceType').value = 'own';
+        document.getElementById('btn-delete-fish-modal').classList.add('hidden');
+      }
+
+      toggleFarmNameField();
+      updateModalAgePreview();
+      updateModalLiveCount();
+
+      const modal = document.getElementById('fish-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.scrollTop = 0;
+    }
+
+    function closeFishModal() {
+      closeQuickStrainPanels();
+      const modal = document.getElementById('fish-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function toggleFarmNameField() {
+      const isFarm = document.getElementById('fish-sourceType').value === 'farm';
+      document.getElementById('farm-name-wrap').classList.toggle('hidden', !isFarm);
+    }
+
+    function updateModalAgePreview() {
+      const bDate = document.getElementById('fish-birthDate').value;
+      const age = calcAge(bDate);
+      const st = getLifeStage(age.totalDays);
+      document.getElementById('modal-age-preview').textContent =
+        `วันเกิด: ${formatThaiDate(bDate)} • อายุ ${age.text} (${age.totalDays} วัน) — ${st.label}`;
+    }
+
+    function updateModalLiveCount() {
+      const init = Number(document.getElementById('fish-initialCount').value) || 0;
+      const added = Number(document.getElementById('fish-addedCount').value) || 0;
+      const dead = Number(document.getElementById('fish-deadCount').value) || 0;
+      document.getElementById('modal-live-count').textContent = Math.max(0, init + added - dead);
+    }
+
+    function saveFishForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('fish-id').value;
+      const sourceType = document.getElementById('fish-sourceType').value;
+      const farmName = document.getElementById('fish-farmName').value.trim();
+      const strain = document.getElementById('fish-strain').value.trim();
+
+      if (!strain) {
+        showToast('กรุณาเลือกหรือเพิ่มชื่อสายพันธุ์ก่อนบันทึก', 'warning');
+        return;
+      }
+
+      if (!appData.strains.includes(strain)) {
+        appData.strains.push(strain);
+      }
+
+      const payload = {
+        id: id || generateId(),
+        strain: strain,
+        tankCode: document.getElementById('fish-tankCode').value.trim().toUpperCase(),
+        groupCode: document.getElementById('fish-groupCode').value.trim(),
+        birthDate: document.getElementById('fish-birthDate').value,
+        initialCount: Math.max(0, Number(document.getElementById('fish-initialCount').value) || 0),
+        sex: document.getElementById('fish-sex').value,
+        fatherId: document.getElementById('fish-fatherId').value.trim(),
+        motherId: document.getElementById('fish-motherId').value.trim(),
+        sourceType: sourceType,
+        farmName: sourceType === 'farm' ? farmName : '',
+        source: sourceType === 'farm' ? `นำเข้าจากฟาร์ม: ${farmName || '-'}` : 'เพาะเอง',
+        notes: document.getElementById('fish-notes').value.trim(),
+        addedCount: Math.max(0, Number(document.getElementById('fish-addedCount').value) || 0),
+        deadCount: Math.max(0, Number(document.getElementById('fish-deadCount').value) || 0),
+        createdAt: new Date().toISOString()
+      };
+
+      if (id) {
+        const idx = appData.fish.findIndex(f => f.id === id);
+        if (idx !== -1) {
+          payload.createdAt = appData.fish[idx].createdAt || payload.createdAt;
+          appData.fish[idx] = payload;
+        }
+        showToast(`อัปเดตข้อมูลตู้ ${payload.tankCode} เรียบร้อยแล้ว`);
+      } else {
+        appData.fish.unshift(payload);
+        selectedLabelIds.add(payload.id);
+        showToast(`เพิ่มชุดปลาใหม่ลงตู้ ${payload.tankCode} เรียบร้อยแล้ว`);
+      }
+
+      saveData();
+      closeFishModal();
+      renderAll();
+    }
+
+    function requestDeleteFish(id) {
+      const fish = appData.fish.find(f => f.id === id);
+      if (!fish) return;
+      openConfirmModal(
+        'ลบชุดปลาออกจากระบบ',
+        `ต้องการลบ "${fish.strain}" (${fish.groupCode || '-'}) ในตู้ ${fish.tankCode} ใช่หรือไม่?`,
+        () => {
+          appData.fish = appData.fish.filter(f => f.id !== id);
+          selectedLabelIds.delete(id);
+          saveData();
+          renderAll();
+          showToast(`ลบรายการปลาในตู้ ${fish.tankCode} แล้ว`);
+        }
+      );
+    }
+
+    function requestDeleteFishFromModal() {
+      const id = document.getElementById('fish-id').value;
+      if (!id) return;
+      closeFishModal();
+      requestDeleteFish(id);
+    }
+
+    // ================= STRAIN MANAGEMENT =================
+    function countBatchesUsingStrain(strainName) {
+      return appData.fish.filter(f => (f.strain || '').trim() === strainName).length;
+    }
+
+    function strainExists(name, excludeExactName = null) {
+      const lower = name.trim().toLowerCase();
+      return appData.strains.some(s => {
+        if (excludeExactName !== null && s === excludeExactName) return false;
+        return s.trim().toLowerCase() === lower;
+      });
+    }
+
+    function closeQuickStrainPanels() {
+      document.getElementById('custom-strain-wrap').classList.add('hidden');
+      document.getElementById('edit-strain-wrap').classList.add('hidden');
+    }
+
+    function toggleQuickStrainPanel(mode) {
+      const addWrap = document.getElementById('custom-strain-wrap');
+      const editWrap = document.getElementById('edit-strain-wrap');
+
+      if (mode === 'add') {
+        const willOpen = addWrap.classList.contains('hidden');
+        closeQuickStrainPanels();
+        if (willOpen) {
+          addWrap.classList.remove('hidden');
+          document.getElementById('fish-custom-strain').value = '';
+        }
+        return;
+      }
+
+      if (mode === 'edit') {
+        const currentStrain = document.getElementById('fish-strain').value;
+        if (!currentStrain) {
+          showToast('กรุณาเลือกสายพันธุ์ที่ต้องการแก้ไขก่อน', 'warning');
+          return;
+        }
+        const willOpen = editWrap.classList.contains('hidden');
+        closeQuickStrainPanels();
+        if (willOpen) {
+          editWrap.classList.remove('hidden');
+          document.getElementById('fish-edit-strain-input').value = currentStrain;
+          const used = countBatchesUsingStrain(currentStrain);
+          document.getElementById('edit-strain-usage-hint').textContent =
+            used > 0 ? `ใช้งานอยู่ ${used} ชุด` : 'ยังไม่มีชุดปลาใช้งาน';
+        }
+      }
+    }
+
+    function onFishStrainDropdownChange() {
+      const editWrap = document.getElementById('edit-strain-wrap');
+      if (!editWrap.classList.contains('hidden')) {
+        const currentStrain = document.getElementById('fish-strain').value;
+        document.getElementById('fish-edit-strain-input').value = currentStrain;
+        const used = countBatchesUsingStrain(currentStrain);
+        document.getElementById('edit-strain-usage-hint').textContent =
+          used > 0 ? `ใช้งานอยู่ ${used} ชุด` : 'ยังไม่มีชุดปลาใช้งาน';
+      }
+    }
+
+    function addCustomStrain() {
+      const input = document.getElementById('fish-custom-strain');
+      const val = input.value.trim();
+      if (!val) {
+        showToast('กรุณากรอกชื่อสายพันธุ์ใหม่', 'warning');
+        return;
+      }
+      if (strainExists(val)) {
+        const existing = appData.strains.find(s => s.trim().toLowerCase() === val.toLowerCase());
+        populateModalStrainSelect(existing || val);
+        closeQuickStrainPanels();
+        showToast(`มีสายพันธุ์ "${existing || val}" อยู่แล้ว (เลือกให้เรียบร้อย)`, 'warning');
+        return;
+      }
+      appData.strains.push(val);
+      saveData();
+      populateModalStrainSelect(val);
+      renderDashboard();
+      if (!document.getElementById('strain-manager-modal').classList.contains('hidden')) {
+        renderStrainManagerList();
+      }
+      input.value = '';
+      closeQuickStrainPanels();
+      showToast(`เพิ่มสายพันธุ์ "${val}" และเลือกให้แล้ว`);
+    }
+
+    function renameStrainGlobally(oldName, newName) {
+      const trimmedNew = newName.trim();
+      if (!trimmedNew) {
+        showToast('ชื่อสายพันธุ์ต้องไม่เป็นค่าว่าง', 'warning');
+        return false;
+      }
+      if (oldName === trimmedNew) return true;
+      if (strainExists(trimmedNew, oldName)) {
+        showToast(`ชื่อสายพันธุ์ "${trimmedNew}" ซ้ำกับที่มีอยู่ในระบบ`, 'warning');
+        return false;
+      }
+
+      const idx = appData.strains.indexOf(oldName);
+      if (idx !== -1) appData.strains[idx] = trimmedNew;
+      else appData.strains.push(trimmedNew);
+
+      let updatedFishCount = 0;
+      appData.fish.forEach(f => {
+        if ((f.strain || '').trim() === oldName) {
+          f.strain = trimmedNew;
+          updatedFishCount++;
+        }
+      });
+
+      const filterStrainEl = document.getElementById('filter-strain');
+      const wasFilteredByOld = filterStrainEl && filterStrainEl.value === oldName;
+
+      saveData();
+      renderAll();
+
+      if (wasFilteredByOld) {
+        filterStrainEl.value = trimmedNew;
+        renderFishListOnly();
+      }
+
+      const fishModal = document.getElementById('fish-modal');
+      if (!fishModal.classList.contains('hidden')) {
+        const fishStrainSel = document.getElementById('fish-strain');
+        const nextSelected = fishStrainSel.value === oldName ? trimmedNew : fishStrainSel.value;
+        populateModalStrainSelect(nextSelected);
+      }
+
+      const msg = updatedFishCount > 0
+        ? `เปลี่ยนชื่อเป็น "${trimmedNew}" และอัปเดตชุดปลา ${updatedFishCount} ชุดเรียบร้อย`
+        : `เปลี่ยนชื่อสายพันธุ์เป็น "${trimmedNew}" เรียบร้อยแล้ว`;
+      showToast(msg);
+      return true;
+    }
+
+    function saveQuickEditStrain() {
+      const oldName = document.getElementById('fish-strain').value;
+      const newName = document.getElementById('fish-edit-strain-input').value;
+      if (!oldName) return;
+      if (renameStrainGlobally(oldName, newName)) {
+        populateModalStrainSelect(newName.trim());
+        closeQuickStrainPanels();
+      }
+    }
+
+    function deleteSelectedStrainFromModal() {
+      const selected = document.getElementById('fish-strain').value;
+      if (!selected) {
+        showToast('ไม่มีสายพันธุ์ที่เลือกสำหรับลบ', 'warning');
+        return;
+      }
+      if (!appData.strains.includes(selected)) {
+        showToast('สายพันธุ์นี้ถูกลบออกจากรายชื่อตัวเลือกไปแล้ว', 'warning');
+        return;
+      }
+      openDeleteStrainModal(selected);
+    }
+
+    function openStrainManager() {
+      cancelManagerEditStrain();
+      document.getElementById('strain-manager-new-input').value = '';
+      renderStrainManagerList();
+      const modal = document.getElementById('strain-manager-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.scrollTop = 0;
+    }
+
+    function closeStrainManager() {
+      cancelManagerEditStrain();
+      const modal = document.getElementById('strain-manager-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function addStrainFromManager(e) {
+      e.preventDefault();
+      const input = document.getElementById('strain-manager-new-input');
+      const val = input.value.trim();
+      if (!val) {
+        showToast('กรุณากรอกชื่อสายพันธุ์ใหม่', 'warning');
+        return;
+      }
+      if (strainExists(val)) {
+        showToast(`มีสายพันธุ์ "${val}" อยู่ในระบบแล้ว`, 'warning');
+        return;
+      }
+      appData.strains.unshift(val);
+      saveData();
+      input.value = '';
+      renderStrainManagerList();
+      renderDashboard();
+
+      if (!document.getElementById('fish-modal').classList.contains('hidden')) {
+        const cur = document.getElementById('fish-strain').value;
+        populateModalStrainSelect(cur || val);
+      }
+
+      showToast(`เพิ่มสายพันธุ์ "${val}" เรียบร้อยแล้ว`);
+    }
+
+    function startManagerEditStrain(idx) {
+      const strain = appData.strains[idx];
+      if (strain === undefined) return;
+      managerEditingStrainOldName = strain;
+      const used = countBatchesUsingStrain(strain);
+      document.getElementById('strain-manager-edit-old-label').textContent = strain;
+      document.getElementById('strain-manager-edit-usage').textContent =
+        used > 0 ? `จะอัปเดตชุดปลา ${used} ชุดอัตโนมัติ` : 'ยังไม่มีชุดปลาใช้งาน';
+      document.getElementById('strain-manager-edit-input').value = strain;
+      document.getElementById('strain-manager-edit-box').classList.remove('hidden');
+      document.getElementById('strain-manager-modal').scrollTop = 0;
+    }
+
+    function cancelManagerEditStrain() {
+      managerEditingStrainOldName = null;
+      const box = document.getElementById('strain-manager-edit-box');
+      if (box) box.classList.add('hidden');
+    }
+
+    function saveManagerEditStrain() {
+      if (!managerEditingStrainOldName) return;
+      const newVal = document.getElementById('strain-manager-edit-input').value;
+      if (renameStrainGlobally(managerEditingStrainOldName, newVal)) {
+        cancelManagerEditStrain();
+        renderStrainManagerList();
+      }
+    }
+
+    function renderStrainManagerList() {
+      const listEl = document.getElementById('strain-manager-list');
+      document.getElementById('strain-manager-count').textContent = appData.strains.length;
+
+      if (appData.strains.length === 0) {
+        listEl.innerHTML = `<div class="p-6 text-center text-sm text-slate-400 border border-dashed border-slate-200 rounded-2xl">ยังไม่มีรายชื่อสายพันธุ์ในระบบ สามารถพิมพ์เพิ่มด้านบนได้เลย</div>`;
+        return;
+      }
+
+      listEl.innerHTML = appData.strains.map((strain, idx) => {
+        const count = countBatchesUsingStrain(strain);
+        return `
+          <div class="flex items-center justify-between gap-2 p-3 rounded-2xl border border-slate-200 bg-white hover:border-teal-300 hover:bg-slate-50/60 transition">
+            <div class="min-w-0 flex items-center gap-2.5">
+              <span class="font-heading font-medium text-sm text-slate-900 truncate">${escapeHtml(strain)}</span>
+              <span class="shrink-0 text-[11px] font-heading font-semibold px-2 py-0.5 rounded-full ${count > 0 ? 'bg-teal-50 text-[#0f766e] border border-teal-200' : 'bg-slate-100 text-slate-500'}">
+                ${count} ชุด
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="startManagerEditStrain(${idx})" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-heading font-medium transition">
+                แก้ไข
+              </button>
+              <button type="button" onclick="openDeleteStrainModalByIndex(${idx})" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-heading font-medium transition">
+                ลบ
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openDeleteStrainModalByIndex(idx) {
+      const strain = appData.strains[idx];
+      if (strain !== undefined) openDeleteStrainModal(strain);
+    }
+
+    function openDeleteStrainModal(strainName) {
+      pendingDeleteStrainName = strainName;
+      const usedCount = countBatchesUsingStrain(strainName);
+      const otherStrains = appData.strains.filter(s => s !== strainName);
+
+      document.getElementById('strain-delete-message').innerHTML =
+        `ต้องการลบสายพันธุ์ <strong class="text-slate-900">"${escapeHtml(strainName)}"</strong> ออกจากรายชื่อตัวเลือกใช่หรือไม่?`;
+
+      const inUseBox = document.getElementById('strain-delete-inuse-options');
+      const reassignLabel = document.getElementById('strain-delete-reassign-label');
+      const reassignWrap = document.getElementById('strain-delete-reassign-wrap');
+      const reassignSel = document.getElementById('strain-delete-reassign-select');
+
+      const keepRadio = document.querySelector('input[name="strain-delete-mode"][value="keep"]');
+      if (keepRadio) keepRadio.checked = true;
+      reassignWrap.classList.add('hidden');
+
+      if (usedCount > 0) {
+        inUseBox.classList.remove('hidden');
+        document.getElementById('strain-delete-warning-text').textContent =
+          `คำเตือน: ขณะนี้มีชุดปลาใช้งานสายพันธุ์นี้อยู่ ${usedCount} ชุด กรุณาเลือกวิธีจัดการ:`;
+
+        if (otherStrains.length > 0) {
+          reassignLabel.classList.remove('hidden');
+          reassignSel.innerHTML = otherStrains.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        } else {
+          reassignLabel.classList.add('hidden');
+        }
+      } else {
+        inUseBox.classList.add('hidden');
+      }
+
+      const modal = document.getElementById('strain-delete-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function toggleReassignStrainSelect() {
+      const mode = document.querySelector('input[name="strain-delete-mode"]:checked')?.value || 'keep';
+      document.getElementById('strain-delete-reassign-wrap').classList.toggle('hidden', mode !== 'reassign');
+    }
+
+    function closeDeleteStrainModal() {
+      pendingDeleteStrainName = null;
+      const modal = document.getElementById('strain-delete-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function confirmDeleteStrain() {
+      const targetName = pendingDeleteStrainName;
+      if (!targetName) return;
+
+      const usedCount = countBatchesUsingStrain(targetName);
+      const mode = document.querySelector('input[name="strain-delete-mode"]:checked')?.value || 'keep';
+      const reassignTo = document.getElementById('strain-delete-reassign-select').value;
+
+      appData.strains = appData.strains.filter(s => s !== targetName);
+
+      let movedCount = 0;
+      if (usedCount > 0 && mode === 'reassign' && reassignTo) {
+        appData.fish.forEach(f => {
+          if ((f.strain || '').trim() === targetName) {
+            f.strain = reassignTo;
+            movedCount++;
+          }
+        });
+      }
+
+      saveData();
+      closeDeleteStrainModal();
+      closeQuickStrainPanels();
+
+      if (!document.getElementById('fish-modal').classList.contains('hidden')) {
+        const currentSel = document.getElementById('fish-strain').value;
+        const nextSel = currentSel === targetName
+          ? (movedCount > 0 ? reassignTo : (appData.strains[0] || ''))
+          : currentSel;
+        populateModalStrainSelect(nextSel);
+      }
+
+      if (!document.getElementById('strain-manager-modal').classList.contains('hidden')) {
+        if (managerEditingStrainOldName === targetName) cancelManagerEditStrain();
+        renderStrainManagerList();
+      }
+
+      renderAll();
+
+      if (movedCount > 0) {
+        showToast(`ลบ "${targetName}" และย้ายชุดปลา ${movedCount} ชุดไปที่ "${reassignTo}" แล้ว`);
+      } else {
+        showToast(`ลบสายพันธุ์ "${targetName}" ออกจากตัวเลือกเรียบร้อยแล้ว`);
+      }
+    }
+
+    // ================= TAB 2: INTERACTIVE TANK MAP =================
+    function setTankMapFilter(filter) {
+      tankMapFilter = filter;
+      renderTankMap();
+    }
+
+    function renderTankMap() {
+      ['all', 'occupied', 'empty', 'duplicate'].forEach(k => {
+        const btn = document.getElementById(`tm-filter-${k}`);
+        if (tankMapFilter === k) {
+          btn.classList.add('bg-[#0f766e]', 'text-white', 'shadow-xs');
+          btn.classList.remove('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+        } else {
+          btn.classList.remove('bg-[#0f766e]', 'text-white', 'shadow-xs');
+          btn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+        }
+      });
+
+      const fishByTank = {};
+      appData.fish.forEach(f => {
+        const code = (f.tankCode || '').trim().toUpperCase();
+        if (!fishByTank[code]) fishByTank[code] = [];
+        fishByTank[code].push(f);
+      });
+
+      const zones = [
+        { key: 'A', title: 'โซน A', desc: 'A-01 ถึง A-28' },
+        { key: 'B', title: 'โซน B', desc: 'B-01 ถึง B-24' },
+        { key: 'C', title: 'โซน C', desc: 'C-01 ถึง C-22' }
+      ];
+
+      const container = document.getElementById('tankGrid');
+      container.innerHTML = zones.map(zone => {
+        const zoneTanks = appData.tanks.filter(t => getTankZone(t.code) === zone.key);
+        const occupiedInZone = zoneTanks.filter(t => (fishByTank[t.code] || []).length > 0).length;
+
+        const filteredTanks = zoneTanks.filter(t => {
+          const items = fishByTank[t.code] || [];
+          if (tankMapFilter === 'occupied') return items.length > 0;
+          if (tankMapFilter === 'empty') return items.length === 0;
+          if (tankMapFilter === 'duplicate') return items.length > 1;
+          return true;
+        });
+
+        if (filteredTanks.length === 0) return '';
+
+        const cardsHtml = filteredTanks.map(t => {
+          const items = fishByTank[t.code] || [];
+          if (items.length === 0) {
+            return `
+              <button type="button" onclick="openFishModal(null, '${escapeHtml(t.code)}')" class="group text-left rounded-2xl p-2.5 border border-dashed border-slate-300 bg-white/80 hover:bg-teal-50/70 hover:border-[#0f766e] transition min-h-[92px] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span class="font-heading font-bold text-xs text-slate-500 group-hover:text-[#0f766e]">${escapeHtml(t.code)}</span>
+                  <span class="text-[10px] text-slate-400 group-hover:text-[#0f766e]">+ เพิ่ม</span>
+                </div>
+                <div class="text-[11px] text-slate-400 text-center py-2">ตู้ว่าง</div>
+              </button>
+            `;
+          }
+
+          const sorted = [...items].sort((a, b) => calcAge(b.birthDate).totalDays - calcAge(a.birthDate).totalDays);
+          const primary = sorted[0];
+          const age = calcAge(primary.birthDate);
+          const stage = getLifeStage(age.totalDays);
+          const isDupe = items.length > 1;
+          const totalLive = items.reduce((sum, x) => sum + getLiveCount(x), 0);
+
+          return `
+            <button type="button" onclick="openTankDetailModal('${escapeHtml(t.code)}')" class="text-left rounded-2xl p-2.5 border-2 transition min-h-[92px] flex flex-col justify-between shadow-xs hover:shadow-md active:scale-[0.98] ${isDupe ? 'bg-rose-50/90 border-rose-400 ring-2 ring-rose-300/60' : stage.tankClass}">
+              <div class="flex items-center justify-between gap-1">
+                <span class="font-heading font-bold text-xs text-slate-900">${escapeHtml(t.code)}</span>
+                ${isDupe
+                  ? `<span class="px-1.5 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-heading font-bold">${items.length} ชุด</span>`
+                  : `<span class="px-1.5 py-0.5 rounded-md text-[10px] font-heading font-semibold ${stage.agePillClass}">${age.totalDays} วัน</span>`
+                }
+              </div>
+              <div class="mt-1.5">
+                <p class="font-heading font-semibold text-[11px] text-slate-900 leading-tight line-clamp-2">${escapeHtml(primary.strain)}</p>
+                <p class="text-[10px] text-slate-600 truncate mt-0.5">${isDupe ? `ซ้ำกับ ${escapeHtml(sorted[1].groupCode || sorted[1].strain)}` : escapeHtml(primary.groupCode || '-')}</p>
+              </div>
+              <div class="mt-1.5 pt-1 border-t border-black/5 flex items-center justify-between text-[10px] text-slate-600">
+                <span>${totalLive} ตัว</span>
+                <span class="font-medium">${isDupe ? 'กดแก้ไข' : escapeHtml(age.text)}</span>
+              </div>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-xl bg-[#0f766e] text-teal-100 font-heading font-bold text-sm flex items-center justify-center">${zone.key}</span>
+                <div>
+                  <h3 class="font-heading font-bold text-slate-900 text-sm sm:text-base">${zone.title}</h3>
+                  <p class="text-[11px] text-slate-500">${zone.desc}</p>
+                </div>
+              </div>
+              <span class="text-xs font-heading font-medium px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700">
+                มีปลา <strong class="text-[#0f766e]">${occupiedInZone}</strong> / ${zoneTanks.length} ตู้
+              </span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-2.5">
+              ${cardsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (!container.innerHTML.trim()) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-200">ไม่พบตู้ปลาที่ตรงกับเงื่อนไขที่เลือก</div>`;
+      }
+    }
+
+    function openTankDetailModal(tankCode) {
+      const items = appData.fish.filter(f => (f.tankCode || '').trim().toUpperCase() === tankCode);
+      document.getElementById('tank-detail-title').textContent = `ตู้ปลา ${tankCode}`;
+      document.getElementById('tank-detail-subtitle').textContent = items.length > 1
+        ? `พบชุดปลาซ้ำซ้อนอยู่ ${items.length} ชุดในตู้นี้`
+        : `มีปลาอยู่ ${items.length} ชุด`;
+
+      document.getElementById('tank-detail-add-btn').onclick = () => {
+        closeTankDetailModal();
+        openFishModal(null, tankCode);
+      };
+
+      const body = document.getElementById('tank-detail-body');
+      body.innerHTML = items.map(f => {
+        const age = calcAge(f.birthDate);
+        const st = getLifeStage(age.totalDays);
+        const live = getLiveCount(f);
+        return `
+          <div class="rounded-2xl p-3.5 border border-slate-200 bg-slate-50/70 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="font-heading font-bold text-slate-900 text-sm">${escapeHtml(f.strain)}</h4>
+                <p class="text-xs text-slate-600">รุ่น: <strong>${escapeHtml(f.groupCode || '-')}</strong> • เพศ: ${escapeHtml(f.sex || 'รวม')}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-heading font-medium border ${st.badgeClass}">${st.label}</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs bg-white rounded-xl p-2 border border-slate-100">
+              <div><span class="text-slate-400 block text-[10px]">วันเกิด</span><strong>${formatThaiDate(f.birthDate)}</strong></div>
+              <div><span class="text-slate-400 block text-[10px]">อายุ</span><strong class="text-[#0f766e]">${escapeHtml(age.text)} (${age.totalDays} วัน)</strong></div>
+              <div><span class="text-slate-400 block text-[10px]">คงเหลือ</span><strong class="text-teal-700">${live} ตัว</strong></div>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" onclick="closeTankDetailModal(); openFishModal('${escapeHtml(f.id)}')" class="px-3 py-1.5 rounded-xl bg-[#0f766e] hover:bg-[#0f5c5c] text-white text-xs font-heading font-semibold">แก้ไข / ย้ายตู้</button>
+              <button type="button" onclick="closeTankDetailModal(); requestDeleteFish('${escapeHtml(f.id)}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-heading font-semibold">ลบ</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const modal = document.getElementById('tank-detail-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.scrollTop = 0;
+    }
+
+    function closeTankDetailModal() {
+      const modal = document.getElementById('tank-detail-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // ================= TAB 3: PRINTABLE LABELS & SUMMARY TABLE =================
+    function initSelectedLabels() {
+      selectedLabelIds = new Set(appData.fish.map(f => f.id));
+    }
+
+    function setPrintMode(mode) {
+      printMode = mode;
+      renderPrintTab();
+    }
+
+    function toggleLabelSelect(id) {
+      if (selectedLabelIds.has(id)) selectedLabelIds.delete(id);
+      else selectedLabelIds.add(id);
+      renderPrintTab();
+    }
+
+    function toggleSelectAllLabels(selectAll) {
+      const zone = document.getElementById('label-zone-filter').value;
+      appData.fish.forEach(f => {
+        if (zone === 'all' || getTankZone(f.tankCode) === zone) {
+          if (selectAll) selectedLabelIds.add(f.id);
+          else selectedLabelIds.delete(f.id);
+        }
+      });
+      renderPrintTab();
+    }
+
+    function getVisiblePrintItems() {
+      const zone = document.getElementById('label-zone-filter').value;
+      return appData.fish
+        .filter(f => zone === 'all' || getTankZone(f.tankCode) === zone)
+        .sort((a, b) => (a.tankCode || '').localeCompare(b.tankCode || '', undefined, { numeric: true }));
+    }
+
+    function getSelectedPrintItems() {
+      return getVisiblePrintItems().filter(f => selectedLabelIds.has(f.id));
+    }
+
+    function renderPrintTab() {
+      const labelsBtn = document.getElementById('print-mode-labels');
+      const summaryBtn = document.getElementById('print-mode-summary');
+      const colsWrap = document.getElementById('label-cols-wrap');
+
+      if (printMode === 'labels') {
+        labelsBtn.classList.add('bg-[#0f766e]', 'text-white', 'shadow-xs');
+        labelsBtn.classList.remove('text-slate-600', 'hover:text-slate-900');
+        summaryBtn.classList.remove('bg-[#0f766e]', 'text-white', 'shadow-xs');
+        summaryBtn.classList.add('text-slate-600', 'hover:text-slate-900');
+        colsWrap.classList.remove('hidden');
+      } else {
+        summaryBtn.classList.add('bg-[#0f766e]', 'text-white', 'shadow-xs');
+        summaryBtn.classList.remove('text-slate-600', 'hover:text-slate-900');
+        labelsBtn.classList.remove('bg-[#0f766e]', 'text-white', 'shadow-xs');
+        labelsBtn.classList.add('text-slate-600', 'hover:text-slate-900');
+        colsWrap.classList.add('hidden');
+      }
+
+      const items = getVisiblePrintItems();
+      const selectedItems = items.filter(f => selectedLabelIds.has(f.id));
+      document.getElementById('label-selected-count').textContent = selectedItems.length;
+
+      const container = document.getElementById('print-preview-container');
+      const refLabel = formatThaiDate(referenceDateISO);
+
+      if (printMode === 'labels') {
+        const cols = document.getElementById('label-cols-select').value;
+        const gridClass = cols === '3'
+          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 print:grid-cols-3'
+          : 'grid grid-cols-1 sm:grid-cols-2 gap-3.5 print:grid-cols-2';
+
+        container.innerHTML = `<div class="${gridClass}">` + items.map(f => {
+          const isChecked = selectedLabelIds.has(f.id);
+          const age = calcAge(f.birthDate);
+          const st = getLifeStage(age.totalDays);
+          const live = getLiveCount(f);
+          const parentage = (f.fatherId && f.fatherId !== '-') || (f.motherId && f.motherId !== '-')
+            ? `พ่อ: ${f.fatherId || '-'} | แม่: ${f.motherId || '-'}`
+            : (f.source || 'เพาะเอง');
+
+          return `
+            <div class="print-label-card bg-white rounded-2xl border-2 ${isChecked ? 'border-[#0f766e] shadow-sm' : 'border-slate-200 opacity-45 no-print'} p-4 flex flex-col justify-between transition">
+              <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleLabelSelect('${escapeHtml(f.id)}')" class="no-print w-5 h-5 accent-[#0f766e] rounded cursor-pointer" />
+                  <span class="print-badge font-heading font-bold text-xl px-3 py-0.5 rounded-xl bg-[#0f766e] text-white tracking-wide">${escapeHtml(f.tankCode || '-')}</span>
+                </div>
+                <span class="print-badge px-2.5 py-0.5 rounded-full text-[11px] font-heading font-semibold border ${st.badgeClass}">${st.label}</span>
+              </div>
+
+              <div class="py-2.5 space-y-1.5">
+                <div class="font-heading font-bold text-base text-slate-900 leading-snug">${escapeHtml(f.strain)}</div>
+                <div class="text-xs text-slate-700">รุ่น / รหัสชุด: <strong class="text-slate-900">${escapeHtml(f.groupCode || '-')}</strong></div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                  <div class="bg-slate-50 rounded-xl p-2 border border-slate-200">
+                    <span class="block text-[10px] text-slate-500">วันเกิด</span>
+                    <span class="font-heading font-bold text-xs text-slate-900">${formatThaiDate(f.birthDate)}</span>
+                  </div>
+                  <div class="bg-teal-50/70 rounded-xl p-2 border border-teal-200">
+                    <span class="block text-[10px] text-[#0f766e]">อายุ ณ ${refLabel}</span>
+                    <span class="font-heading font-bold text-xs text-[#08363c]">${escapeHtml(age.text)} (${age.totalDays} วัน)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+                <span class="truncate pr-2">${escapeHtml(parentage)}</span>
+                <span class="shrink-0 font-semibold text-slate-800">เพศ: ${escapeHtml(f.sex || 'รวม')} • ${live} ตัว</span>
+              </div>
+            </div>
+          `;
+        }).join('') + `</div>`;
+      } else {
+        const totalFishSelected = selectedItems.reduce((sum, f) => sum + getLiveCount(f), 0);
+        const rowsHtml = items.map(f => {
+          const isChecked = selectedLabelIds.has(f.id);
+          const age = calcAge(f.birthDate);
+          const st = getLifeStage(age.totalDays);
+          const live = getLiveCount(f);
+          const parentage = (f.fatherId && f.fatherId !== '-') || (f.motherId && f.motherId !== '-')
+            ? `พ่อ: ${f.fatherId || '-'} / แม่: ${f.motherId || '-'}`
+            : (f.source || 'เพาะเอง');
+          return `
+            <tr class="${isChecked ? '' : 'opacity-40 no-print'}">
+              <td class="no-print py-2 px-2 text-center border-b border-slate-200">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleLabelSelect('${escapeHtml(f.id)}')" class="w-4 h-4 accent-[#0f766e] cursor-pointer" />
+              </td>
+              <td class="py-2 px-2.5 font-heading font-bold text-slate-900 border-b border-slate-200 whitespace-nowrap">${escapeHtml(f.tankCode || '-')}</td>
+              <td class="py-2 px-2.5 border-b border-slate-200">
+                <div class="font-semibold text-slate-900">${escapeHtml(f.strain)}</div>
+                <div class="text-xs text-slate-500">${escapeHtml(f.groupCode || '-')}</div>
+              </td>
+              <td class="py-2 px-2.5 border-b border-slate-200 whitespace-nowrap">${formatThaiDate(f.birthDate)}</td>
+              <td class="py-2 px-2.5 border-b border-slate-200 whitespace-nowrap font-semibold text-[#0f766e]">${escapeHtml(age.text)} (${age.totalDays} วัน)</td>
+              <td class="py-2 px-2.5 border-b border-slate-200 whitespace-nowrap">${st.label}</td>
+              <td class="py-2 px-2.5 border-b border-slate-200 text-center font-semibold">${live} ตัว</td>
+              <td class="py-2 px-2.5 border-b border-slate-200 text-xs text-slate-600">${escapeHtml(f.sex || 'รวม')} • ${escapeHtml(parentage)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm print:border-0 print:p-0 print:shadow-none">
+            <div class="flex flex-wrap items-end justify-between gap-2 pb-3 mb-3 border-b-2 border-[#0f766e]">
+              <div>
+                <h3 class="font-heading font-bold text-lg text-[#0f766e]">ตารางสรุปข้อมูลการเลี้ยงปลาหางนกยูง (Guppy Farm Tracker)</h3>
+                <p class="text-xs text-slate-600">คำนวณอายุ ณ วันที่ ${formatThaiDate(referenceDateISO, true)}</p>
+              </div>
+              <div class="text-xs sm:text-sm font-heading font-semibold text-slate-800">
+                รวม ${selectedItems.length} ชุด • ปลาคงเหลือ ${formatNumber(totalFishSelected)} ตัว
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="print-summary-table w-full text-left text-xs sm:text-sm border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 font-heading">
+                    <th class="no-print py-2 px-2 text-center w-10">เลือก</th>
+                    <th class="py-2 px-2.5">ตู้</th>
+                    <th class="py-2 px-2.5">สายพันธุ์ / รุ่น</th>
+                    <th class="py-2 px-2.5">วันเกิด</th>
+                    <th class="py-2 px-2.5">อายุปลา</th>
+                    <th class="py-2 px-2.5">ช่วงวัย</th>
+                    <th class="py-2 px-2.5 text-center">คงเหลือ</th>
+                    <th class="py-2 px-2.5">เพศ / ที่มา</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function buildStandalonePrintHtml() {
+      const selected = getSelectedPrintItems();
+      const cols = Number(document.getElementById('label-cols-select').value) || 2;
+      const perPage = cols === 3 ? 12 : 8;
+      const refFull = formatThaiDate(referenceDateISO, true);
+      const refShort = formatThaiDate(referenceDateISO, false);
+      const totalLive = selected.reduce((sum, f) => sum + getLiveCount(f), 0);
+
+      let bodyContent = '';
+
+      if (printMode === 'labels') {
+        const pages = [];
+        for (let i = 0; i < selected.length; i += perPage) {
+          pages.push(selected.slice(i, i + perPage));
+        }
+
+        bodyContent = pages.map((pageItems, pIdx) => {
+          const cards = pageItems.map(f => {
+            const age = calcAge(f.birthDate);
+            const st = getLifeStage(age.totalDays);
+            const live = getLiveCount(f);
+            const parentage = (f.fatherId && f.fatherId !== '-') || (f.motherId && f.motherId !== '-')
+              ? `พ่อ: ${f.fatherId || '-'} | แม่: ${f.motherId || '-'}`
+              : (f.source || 'เพาะเอง');
+
+            return `
+              <div class="label-card">
+                <div class="label-top">
+                  <span class="tank-badge">${escapeHtml(f.tankCode || '-')}</span>
+                  <span class="stage-pill" style="background:${st.printBg};color:${st.printColor};">${escapeHtml(st.label)}</span>
+                </div>
+                <div class="strain-title">${escapeHtml(f.strain)}</div>
+                <div class="group-line">รุ่น / รหัสชุด: <strong>${escapeHtml(f.groupCode || '-')}</strong></div>
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-lbl">วันเกิด</span>
+                    <span class="meta-val">${formatThaiDate(f.birthDate)}</span>
+                  </div>
+                  <div class="meta-box meta-age">
+                    <span class="meta-lbl">อายุ (${refShort})</span>
+                    <span class="meta-val">${escapeHtml(age.text)} (${age.totalDays} วัน)</span>
+                  </div>
+                </div>
+                <div class="label-foot">
+                  <span>${escapeHtml(parentage)}</span>
+                  <strong>เพศ: ${escapeHtml(f.sex || 'รวม')} • ${live} ตัว</strong>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="a4-sheet ${pIdx < pages.length - 1 ? 'page-break' : ''}">
+              <div class="sheet-header">
+                <strong>ป้ายติดหน้าตู้ปลา — Guppy Farm Tracker</strong>
+                <span>ณ วันที่ ${refFull} (หน้า ${pIdx + 1}/${pages.length})</span>
+              </div>
+              <div class="labels-grid cols-${cols}">${cards}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        const rows = selected.map((f, idx) => {
+          const age = calcAge(f.birthDate);
+          const st = getLifeStage(age.totalDays);
+          const live = getLiveCount(f);
+          const parentage = (f.fatherId && f.fatherId !== '-') || (f.motherId && f.motherId !== '-')
+            ? `พ่อ: ${f.fatherId || '-'} / แม่: ${f.motherId || '-'}`
+            : (f.source || 'เพาะเอง');
+          return `
+            <tr>
+              <td style="text-align:center;">${idx + 1}</td>
+              <td><strong>${escapeHtml(f.tankCode || '-')}</strong></td>
+              <td><strong>${escapeHtml(f.strain)}</strong><div style="font-size:11px;color:#475569;">${escapeHtml(f.groupCode || '-')}</div></td>
+              <td style="white-space:nowrap;">${formatThaiDate(f.birthDate)}</td>
+              <td style="white-space:nowrap;"><strong>${escapeHtml(age.text)}</strong> (${age.totalDays} วัน)</td>
+              <td style="white-space:nowrap;"><span class="stage-pill" style="background:${st.printBg};color:${st.printColor};">${escapeHtml(st.label)}</span></td>
+              <td style="text-align:center;"><strong>${live}</strong></td>
+              <td>${escapeHtml(f.sex || 'รวม')} • ${escapeHtml(parentage)}${f.notes ? `<div style="font-size:11px;color:#475569;">หมายเหตุ: ${escapeHtml(f.notes)}</div>` : ''}</td>
+            </tr>
+          `;
+        }).join('');
+
+        bodyContent = `
+          <div class="a4-sheet">
+            <div class="sheet-header" style="border-bottom:2px solid #0f766e;padding-bottom:8px;margin-bottom:12px;">
+              <div>
+                <div style="font-size:18px;font-weight:700;color:#0f766e;">ตารางสรุปข้อมูลการเลี้ยงปลาหางนกยูง — Guppy Farm Tracker</div>
+                <div style="font-size:12px;color:#475569;">คำนวณอายุ ณ วันที่ ${refFull}</div>
+              </div>
+              <div style="text-align:right;font-size:13px;">
+                <strong>รวม ${selected.length} ชุด</strong><br/>
+                <span>ปลาคงเหลือทั้งหมด ${formatNumber(totalLive)} ตัว</span>
+              </div>
+            </div>
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th style="width:32px;text-align:center;">#</th>
+                  <th style="width:54px;">ตู้</th>
+                  <th>สายพันธุ์ / รุ่น</th>
+                  <th style="width:88px;">วันเกิด</th>
+                  <th style="width:120px;">อายุปลา</th>
+                  <th style="width:110px;">ช่วงวัย</th>
+                  <th style="width:52px;text-align:center;">ตัว</th>
+                  <th>เพศ / ที่มา / หมายเหตุ</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>พิมพ์เอกสาร A4 — Guppy Farm Tracker (${refShort})</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; background: #e2e8f0; color: #0f172a; font-family: 'Sarabun', 'Prompt', Tahoma, sans-serif; }
+    .toolbar { max-width: 210mm; margin: 0 auto 14px auto; background: #0f766e; color: #fff; padding: 12px 16px; border-radius: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .toolbar-btn { background: #5eead4; color: #08363c; border: none; border-radius: 10px; padding: 10px 18px; font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .a4-sheet { max-width: 210mm; margin: 0 auto 16px auto; background: #fff; padding: 10mm; border-radius: 8px; }
+    .sheet-header { display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; color: #334155; margin-bottom: 10px; font-family: 'Prompt', sans-serif; }
+    .labels-grid { display: grid; gap: 8px; }
+    .cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .label-card { border: 1.5px dashed #334155; border-radius: 10px; padding: 10px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; break-inside: avoid; page-break-inside: avoid; }
+    .label-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid #cbd5e1; margin-bottom: 6px; }
+    .tank-badge { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 17px; background: #0f766e; color: #fff; padding: 2px 10px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .stage-pill { font-family: 'Prompt', sans-serif; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .strain-title { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 13.5px; line-height: 1.25; color: #0f172a; }
+    .group-line { font-size: 11.5px; color: #334155; margin: 3px 0 6px 0; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+    .meta-box { border: 1px solid #cbd5e1; border-radius: 7px; padding: 4px 6px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .meta-age { background: #f0fdfa; border-color: #99f6e4; }
+    .meta-lbl { display: block; font-size: 9.5px; color: #475569; }
+    .meta-val { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 11px; color: #0f172a; }
+    .label-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 10.5px; color: #334155; padding-top: 5px; border-top: 1px solid #e2e8f0; }
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .summary-table th, .summary-table td { border: 1px solid #475569; padding: 6px 7px; vertical-align: top; text-align: left; }
+    .summary-table th { background: #f1f5f9; font-family: 'Prompt', sans-serif; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .summary-table thead { display: table-header-group; }
+    .summary-table tr { break-inside: avoid; page-break-inside: avoid; }
+    .page-break { page-break-after: always; break-after: page; }
+    @media print {
+      @page { size: A4 portrait; margin: 8mm; }
+      body { background: #fff; padding: 0; }
+      .toolbar { display: none !important; }
+      .a4-sheet { max-width: none; margin: 0; padding: 0; border-radius: 0; }
+    }
+    @media (max-width: 640px) { .cols-2, .cols-3 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <div style="font-family:'Prompt',sans-serif;font-weight:700;font-size:15px;">หน้าเอกสารพร้อมพิมพ์ A4 — Guppy Farm Tracker</div>
+      <div style="font-size:12px;opacity:0.9;">กดปุ่มด้านขวาเพื่อสั่งพิมพ์ หรือเลือก "บันทึกเป็น PDF"</div>
+    </div>
+    <button type="button" class="toolbar-btn" onclick="window.print()">🖨️ สั่งพิมพ์ / บันทึก PDF</button>
+  </div>
+  ${bodyContent}
+</body>
+</html>`;
+    }
+
+    function printDirectNow() {
+      if (getSelectedPrintItems().length === 0) {
+        showToast('กรุณาเลือกชุดปลาอย่างน้อย 1 รายการก่อนสั่งพิมพ์', 'warning');
+        return;
+      }
+      window.print();
+    }
+
+    function openStandalonePrintPage() {
+      if (getSelectedPrintItems().length === 0) {
+        showToast('กรุณาเลือกชุดปลาอย่างน้อย 1 รายการก่อนเปิดหน้าพิมพ์', 'warning');
+        return;
+      }
+      try {
+        const html = buildStandalonePrintHtml();
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, '_blank');
+        if (!win) {
+          showToast('เบราว์เซอร์บล็อกหน้าต่างใหม่ กรุณากดปุ่ม "💾 ดาวน์โหลดหน้าพิมพ์ (.html)" แทนครับ', 'warning');
+          URL.revokeObjectURL(url);
+          return;
+        }
+        showToast('เปิดหน้าพิมพ์แยกแล้ว กดปุ่ม "🖨️ สั่งพิมพ์ / บันทึก PDF" ในหน้าต่างใหม่ได้เลย');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (err) {
+        console.error(err);
+        showToast('ไม่สามารถเปิดหน้าต่างพิมพ์แยกได้ แนะนำให้ใช้ปุ่มดาวน์โหลดหน้าพิมพ์ (.html)', 'error');
+      }
+    }
+
+    function downloadPrintableHtml() {
+      if (getSelectedPrintItems().length === 0) {
+        showToast('กรุณาเลือกชุดปลาอย่างน้อย 1 รายการก่อนดาวน์โหลด', 'warning');
+        return;
+      }
+      try {
+        const html = buildStandalonePrintHtml();
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const prefix = printMode === 'labels' ? 'guppy-tank-labels' : 'guppy-summary-a4';
+        a.href = url;
+        a.download = `${prefix}-${referenceDateISO || getTodayISO()}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        showToast('ดาวน์โหลดไฟล์หน้าพิมพ์ (.html) เรียบร้อยแล้ว');
+      } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการสร้างไฟล์ดาวน์โหลด', 'error');
+      }
+    }
+
+    // ================= TAB 4: FINANCE =================
+    function setFinanceFilter(filter) {
+      financeFilter = filter;
+      renderFinanceTab();
+    }
+
+    function renderFinanceTab() {
+      ['all', 'income', 'expense'].forEach(k => {
+        const btn = document.getElementById(`fin-filter-${k}`);
+        if (financeFilter === k) {
+          btn.classList.add('bg-[#0f766e]', 'text-white', 'shadow-xs');
+          btn.classList.remove('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+        } else {
+          btn.classList.remove('bg-[#0f766e]', 'text-white', 'shadow-xs');
+          btn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+        }
+      });
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      appData.transactions.forEach(tx => {
+        const amt = Number(tx.amount) || 0;
+        if (tx.type === 'income') totalIncome += amt;
+        else totalExpense += amt;
+      });
+      const net = totalIncome - totalExpense;
+
+      document.getElementById('fin-total-income').textContent = `฿${formatNumber(totalIncome)}`;
+      document.getElementById('fin-total-expense').textContent = `฿${formatNumber(totalExpense)}`;
+      const netEl = document.getElementById('fin-net-balance');
+      netEl.textContent = `${net < 0 ? '-' : ''}฿${formatNumber(Math.abs(net))}`;
+      netEl.className = `font-heading text-2xl font-bold mt-1 ${net >= 0 ? 'text-[#0f766e]' : 'text-rose-600'}`;
+
+      const list = appData.transactions
+        .filter(tx => financeFilter === 'all' || tx.type === financeFilter)
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      const tbody = document.getElementById('financeList');
+      const emptyEl = document.getElementById('finance-empty-state');
+
+      if (list.length === 0) {
+        tbody.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      tbody.innerHTML = list.map(tx => {
+        const isInc = tx.type === 'income';
+        const qtyStr = (Number(tx.quantity) > 0 && Number(tx.unitPrice) > 0)
+          ? `${formatNumber(tx.quantity)} × ฿${formatNumber(tx.unitPrice)}`
+          : '-';
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4 whitespace-nowrap text-slate-700">${formatThaiDate(tx.date)}</td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-heading font-medium ${isInc ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                ${isInc ? 'รายรับ' : 'รายจ่าย'}
+              </span>
+              <span class="ml-1.5 font-medium text-slate-800">${escapeHtml(tx.category || '-')}</span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-slate-900 font-medium">${escapeHtml(tx.note || '-')}</div>
+              ${tx.party ? `<div class="text-xs text-slate-500">คู่ค้า/ฟาร์ม: ${escapeHtml(tx.party)}</div>` : ''}
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap text-xs text-slate-500">${qtyStr}</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap font-heading font-bold ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
+              ${isInc ? '+' : '-'}฿${formatNumber(tx.amount)}
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              <button type="button" onclick="openTransactionModal('${escapeHtml(tx.id)}')" class="p-1.5 rounded-lg text-slate-500 hover:text-[#0f766e] hover:bg-teal-50" title="แก้ไข">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button type="button" onclick="requestDeleteTransaction('${escapeHtml(tx.id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="ลบ">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openTransactionModal(txId = null) {
+      document.getElementById('tx-form').reset();
+      const tx = txId ? appData.transactions.find(t => t.id === txId) : null;
+      if (tx) {
+        document.getElementById('tx-modal-title').textContent = 'แก้ไขรายการรายรับ-รายจ่าย';
+        document.getElementById('tx-id').value = tx.id;
+        document.getElementById('tx-type').value = tx.type;
+        document.getElementById('tx-date').value = tx.date || getTodayISO();
+        document.getElementById('tx-category').value = tx.category || '';
+        document.getElementById('tx-party').value = tx.party || '';
+        document.getElementById('tx-quantity').value = Number(tx.quantity) || 0;
+        document.getElementById('tx-unitPrice').value = Number(tx.unitPrice) || 0;
+        document.getElementById('tx-amount').value = Number(tx.amount) || 0;
+        document.getElementById('tx-note').value = tx.note || '';
+      } else {
+        document.getElementById('tx-modal-title').textContent = 'บันทึกรายรับ-รายจ่ายใหม่';
+        document.getElementById('tx-id').value = '';
+        document.getElementById('tx-type').value = 'income';
+        document.getElementById('tx-date').value = getTodayISO();
+        document.getElementById('tx-category').value = 'ขายปลา';
+        document.getElementById('tx-quantity').value = 0;
+        document.getElementById('tx-unitPrice').value = 0;
+        document.getElementById('tx-amount').value = '';
+      }
+      const modal = document.getElementById('tx-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.scrollTop = 0;
+    }
+
+    function closeTransactionModal() {
+      const modal = document.getElementById('tx-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function updateTxCategorySuggestions() {
+      const type = document.getElementById('tx-type').value;
+      const catInput = document.getElementById('tx-category');
+      if (!document.getElementById('tx-id').value) {
+        catInput.value = type === 'income' ? 'ขายปลา' : 'ซื้อปลาเข้า';
+      }
+    }
+
+    function autoCalcTxAmount() {
+      const q = Number(document.getElementById('tx-quantity').value) || 0;
+      const p = Number(document.getElementById('tx-unitPrice').value) || 0;
+      const amtEl = document.getElementById('tx-amount');
+      if (q > 0 && p > 0 && document.activeElement !== amtEl) {
+        amtEl.value = q * p;
+      }
+    }
+
+    function saveTransactionForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('tx-id').value;
+      const nowIso = new Date().toISOString();
+      const payload = {
+        id: id || generateId(),
+        type: document.getElementById('tx-type').value,
+        date: document.getElementById('tx-date').value,
+        category: document.getElementById('tx-category').value.trim(),
+        amount: Math.max(0, Number(document.getElementById('tx-amount').value) || 0),
+        quantity: Math.max(0, Number(document.getElementById('tx-quantity').value) || 0),
+        unitPrice: Math.max(0, Number(document.getElementById('tx-unitPrice').value) || 0),
+        groupId: '',
+        groupCode: '',
+        party: document.getElementById('tx-party').value.trim(),
+        note: document.getElementById('tx-note').value.trim(),
+        createdAt: nowIso,
+        updatedAt: nowIso
+      };
+
+      if (id) {
+        const idx = appData.transactions.findIndex(t => t.id === id);
+        if (idx !== -1) {
+          payload.createdAt = appData.transactions[idx].createdAt || nowIso;
+          appData.transactions[idx] = payload;
+        }
+        showToast('แก้ไขรายการบัญชีแล้ว');
+      } else {
+        appData.transactions.unshift(payload);
+        showToast('บันทึกรายการบัญชีแล้ว');
+      }
+
+      saveData();
+      closeTransactionModal();
+      renderDashboard();
+      renderFinanceTab();
+    }
+
+    function requestDeleteTransaction(id) {
+      const tx = appData.transactions.find(t => t.id === id);
+      if (!tx) return;
+      openConfirmModal(
+        'ลบรายการบัญชี',
+        `ต้องการลบรายการ "${tx.category} (${tx.note || '-'})" ยอด ฿${formatNumber(tx.amount)} ใช่หรือไม่?`,
+        () => {
+          appData.transactions = appData.transactions.filter(t => t.id !== id);
+          saveData();
+          renderDashboard();
+          renderFinanceTab();
+          showToast('ลบรายการบัญชีแล้ว');
+        }
+      );
+    }
+
+    // ================= JSON EXPORT / IMPORT / RESET =================
+    function exportJSON() {
+      try {
+        const exportObj = {
+          fish: appData.fish,
+          tanks: appData.tanks,
+          events: appData.events || [],
+          transactions: appData.transactions || [],
+          pedigreePairs: appData.pedigreePairs || [],
+          strains: appData.strains || [],
+          exportedAt: new Date().toISOString(),
+          appVersion: 'Fish Tank Tracker 8'
+        };
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fish-tank-tracker-backup-${getTodayISO()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        showToast('ส่งออกไฟล์สำรอง JSON เรียบร้อยแล้ว');
+      } catch (err) {
+        console.error(err);
+        showToast('เกิดข้อผิดพลาดในการส่งออกไฟล์ JSON', 'error');
+      }
+    }
+
+    function handleImportJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed || !Array.isArray(parsed.fish)) {
+            showToast('รูปแบบไฟล์ JSON ไม่ถูกต้อง (ไม่พบรายการ fish)', 'error');
+            return;
+          }
+          appData = normalizeData(parsed, true);
+          initSelectedLabels();
+          saveData();
+          clearFishFilters();
+          renderAll();
+          showToast(`นำเข้าข้อมูลสำเร็จ: ปลา ${appData.fish.length} ชุด, บัญชี ${appData.transactions.length} รายการ`);
+        } catch (err) {
+          console.error(err);
+          showToast('ไม่สามารถอ่านไฟล์ JSON ได้ กรุณาตรวจสอบไฟล์', 'error');
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function requestResetData() {
+      openConfirmModal(
+        'รีเซ็ตกลับเป็นข้อมูลเริ่มต้น',
+        'ข้อมูลที่แก้ไขเพิ่มเติมในเครื่องนี้จะถูกแทนที่ด้วยข้อมูลตั้งต้นทั้ง 26 ชุดจากไฟล์สำรองเดิม ยืนยันหรือไม่?',
+        () => {
+          appData = getInitialSeedData();
+          initSelectedLabels();
+          saveData();
+          clearFishFilters();
+          renderAll();
+          showToast('รีเซ็ตข้อมูลกลับเป็นค่าเริ่มต้นเรียบร้อยแล้ว');
+        }
+      );
+    }
+
+    // ================= MASTER RENDER & SAFE EVENT BINDING =================
+    function renderAll() {
+      document.getElementById('live-today-label').textContent = `ณ วันที่ ${formatThaiDate(referenceDateISO, true)}`;
+      renderDashboard();
+      if (activeTab === 'fish') renderFishListOnly();
+      if (activeTab === 'tanks') renderTankMap();
+      if (activeTab === 'labels') renderPrintTab();
+      if (activeTab === 'finance') renderFinanceTab();
+    }
+
+    function bindSafeInputListeners() {
+      const searchEl = document.getElementById('filter-search');
+      let searchDebounce = null;
+      searchEl.addEventListener('input', () => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+          renderFishListOnly();
+        }, 60);
+      });
+
+      const modalClosers = {
+        'fish-modal': closeFishModal,
+        'tank-detail-modal': closeTankDetailModal,
+        'tx-modal': closeTransactionModal,
+        'strain-manager-modal': closeStrainManager,
+        'strain-delete-modal': closeDeleteStrainModal,
+        'confirm-modal': closeConfirmModal
+      };
+
+      Object.keys(modalClosers).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('pointerdown', (e) => {
+          backdropPointerStartId = (e.target === el) ? id : null;
+        });
+        el.addEventListener('click', (e) => {
+          if (e.target === el && backdropPointerStartId === id) {
+            modalClosers[id]();
+          }
+          backdropPointerStartId = null;
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      referenceDateISO = getTodayISO();
+      document.getElementById('ref-date-input').value = referenceDateISO;
+      loadData();
+      initSelectedLabels();
+      bindSafeInputListeners();
+      switchTab('fish');
+      renderAll();
+    });
+  </script>
+
+  <!-- PWA service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+          .then(registration => {
+            // Ask the browser to check for an updated app shell on each visit.
+            registration.update().catch(error => console.warn('PWA update check failed:', error));
+          })
+          .catch(error => console.warn('PWA service worker registration failed:', error));
+      });
+    }
+  </script>
+</body>
+</html>
